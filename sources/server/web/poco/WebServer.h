@@ -1,9 +1,12 @@
 #pragma once
 
+#include <Poco/Net/HTTPServer.h>
+
 #include "web/IWebServer.h"
 #include "web/rest/service/IRestService.h"
-#include <Poco/Net/HTTPServer.h>
+
 #include "HttpRequestHandlerFactory.h"
+#include "WebServerConfiguration.h"
 
 namespace web { namespace poco {
 
@@ -15,14 +18,11 @@ namespace web { namespace poco {
    public:
       //
       //\brief              Create aa embedded w<eb server
-      //\param[in] address  IP address.  In general, use  "0.0.0.0"
-      //\param[in] useSSL   Determine if the server use a SSL certificate
-      //\param[in] port     port to listen on for browser requests e.g. 8080 
-      //\param[in] securedPort  port to listen on for HTTPS browser requests e.g. 443
+      //\param[in] webConfiguration  configuration container
       //\param[in] doc_root path to folder containing html e.g. "./"
       //\param[in] restKeywordBase the string which identifies a rest url ex: /rest/
       //
-      CWebServer(const std::string & address, const bool useSSL, const unsigned short port, const unsigned short securedPort, const std::string & doc_root, const std::string & restKeywordBase, const std::string & webSocketKeywordBase);
+      CWebServer(CWebServerConfiguration & webConfiguration, const std::string & doc_root, const std::string & restKeywordBase, const std::string & webSocketKeywordBase);
 
       //
       //\brief Descturtor

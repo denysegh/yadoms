@@ -11,6 +11,7 @@
 #include <Poco/Net/HTTPServerParams.h>
 #include <Poco/Net/ServerSocket.h>
 #include <Poco/Net/SecureServerSocket.h>
+#include <Poco/Net/SocketAddress.h>
 #include <Poco/Net/WebSocket.h>
 #include <Poco/Net/NetException.h>
 #include "MimeType.h"
@@ -20,8 +21,7 @@
 
 namespace web { namespace poco {
 
-
-   CWebServer::CWebServer(const std::string & address, const bool useSSL, const unsigned short port, const unsigned short securedPort, const std::string & doc_root, const std::string & restKeywordBase, const std::string & webSocketKeywordBase)
+   CWebServer::CWebServer(CWebServerConfiguration & webConfiguration, const std::string & doc_root, const std::string & restKeywordBase, const std::string & webSocketKeywordBase)
       :m_httpRequestHandlerFactory(new CHttpRequestHandlerFactory())
    {
       //configure the factory
@@ -35,63 +35,68 @@ namespace web { namespace poco {
       boost::shared_ptr<IRunningInformation> runningInformation(shared::CServiceLocator::instance().get<IRunningInformation>());
       serverParams->setSoftwareVersion(runningInformation->getSoftwareVersion().getVersion().toString(4));
       serverParams->setKeepAlive(false); //this line fix global catch exception on multiple browser refresh
-
-      // set-up a HTTPServer instance
-      if (address == "0.0.0.0" || address.empty())
+      
+      //in case of "0.0.0.0" or empty , then do not use it, just use port, listen on all interfaces
+      Poco::Net::IPAddress address;
+      if (webConfiguration.ip() == "0.0.0.0" || webConfiguration.ip().empty())
       {
-         //in case of "0.0.0.0" or empty , then do not use it, just use port, listen on all interfaces
-         //Poco::Net::ServerSocket svs(boost::lexical_cast<unsigned short>(port));
-         Poco::Net::ServerSocket svs(port);
-         if (useSSL)
-         {
-            bool fail = false;
-
-            try {
-               svs = Poco::Net::SecureServerSocket(securedPort);
-
-            }
-            catch (Poco::Exception & ex)
-            {
-               //fail to download package
-               YADOMS_LOG(error) << "Fail to configure HTTPS: " << ex.message();
-               fail = true;
-            }
-            catch (std::exception & ex)
-            {
-               //fail to download package
-               YADOMS_LOG(error) << "Fail to configure HTTPS: " << ex.what();
-               fail = true;
-            }
-            catch (...)
-            {
-               //fail to download package
-               YADOMS_LOG(error) << "Fail to configure HTTPS";
-               fail = true;
-            }
-            if (fail)
-            {
-               //we activate the default classic web server
-               YADOMS_LOG(warning) << "**********************************************************";
-               YADOMS_LOG(warning) << "Using HTTP instead of HTTPS due to malformed configuration";
-               YADOMS_LOG(warning) << "**********************************************************";
-               svs = Poco::Net::ServerSocket(port);
-            }
-         }
-
-         bool a = false;
-         int b = 0;
-         svs.getLinger(a, b);
-         svs.setLinger(true, 2);
-         m_embeddedWebServer = boost::make_shared<Poco::Net::HTTPServer>(m_httpRequestHandlerFactory, svs, serverParams);
+         address = Poco::Net::IPAddress::wildcard();
       }
       else
       {
-         //if address is specified, try to use it
-         Poco::Net::SocketAddress sa(address, boost::lexical_cast<unsigned short>(port));
-         Poco::Net::ServerSocket svs(sa);
-         m_embeddedWebServer = boost::make_shared<Poco::Net::HTTPServer>(m_httpRequestHandlerFactory, svs, serverParams);
+         if (!Poco::Net::IPAddress::tryParse(webConfiguration.ip(), address))
+         {
+            //invalid IP provided
+            YADOMS_LOG(warning) << "*******************************************************";
+            YADOMS_LOG(warning) << "Invalid IP address provided in web server configuration";
+            YADOMS_LOG(warning) << "Listening on any ip address";
+            YADOMS_LOG(warning) << "*******************************************************";
+            address = Poco::Net::IPAddress::wildcard();
+         }
       }
-      
+
+      // set-up a HTTPServer instance
+      Poco::Net::ServerSocket svs(Poco::Net::SocketAddress(address, webConfiguration.port()));
+      if (webConfiguration.useSSL())
+      {
+         bool fail = false;
+         try {
+            webConfiguration.configureSSL();
+            svs = Poco::Net::SecureServerSocket(webConfiguration.securedPort());
+         }
+         catch (Poco::Exception & ex)
+         {
+            //fail to download package
+            YADOMS_LOG(error) << "Fail to configure HTTPS: " << ex.message();
+            fail = true;
+         }
+         catch (std::exception & ex)
+         {
+            //fail to download package
+            YADOMS_LOG(error) << "Fail to configure HTTPS: " << ex.what();
+            fail = true;
+         }
+         catch (...)
+         {
+            //fail to download package
+            YADOMS_LOG(error) << "Fail to configure HTTPS";
+            fail = true;
+         }
+         if (fail)
+         {
+            //we activate the default classic web server
+            YADOMS_LOG(warning) << "**********************************************************";
+            YADOMS_LOG(warning) << "Using HTTP instead of HTTPS due to malformed configuration";
+            YADOMS_LOG(warning) << "**********************************************************";
+            svs = Poco::Net::ServerSocket(webConfiguration.port());
+         }
+      }
+
+      bool a = false;
+      int b = 0;
+      svs.getLinger(a, b);
+      svs.setLinger(true, 2);
+      m_embeddedWebServer = boost::make_shared<Poco::Net::HTTPServer>(m_httpRequestHandlerFactory, svs, serverParams);
    }
 
    CWebServer::~CWebServer()

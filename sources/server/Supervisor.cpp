@@ -30,6 +30,8 @@
 #include "startupOptions/IStartupOptions.h"
 #include "dateTime/DateTimeNotifier.h"
 
+#include "web/poco/WebServerConfiguration.h"
+
 
 CSupervisor::CSupervisor(const IPathProvider& pathProvider)
    :m_pathProvider(pathProvider)
@@ -99,20 +101,12 @@ void CSupervisor::run()
       shared::CServiceLocator::instance().push<automation::IRuleManager>(automationRulesManager);
 
       // Start Web server
-      const auto webServerIp = startupOptions->getWebServerIPAddress();
-      const bool webServerUseSSL = startupOptions->getIsWebServerUseSSL();
-      const unsigned short webServerPort = startupOptions->getWebServerPortNumber();
-      const unsigned short securedWebServerPort = startupOptions->getSSLWebServerPortNumber();
       const auto webServerPath = m_pathProvider.webServerPath().string();
       const auto scriptInterpretersPath = m_pathProvider.scriptInterpretersPath().string();
 
-      auto webServer(boost::make_shared<web::poco::CWebServer>(webServerIp,
-                                                               webServerUseSSL,
-                                                               webServerPort,
-                                                               securedWebServerPort,
-                                                               webServerPath,
-                                                               "/rest/",
-                                                               "/ws"));
+      web::poco::CWebServerConfiguration webConf(dal->getConfigurationManager(), startupOptions);
+
+      auto webServer(boost::make_shared<web::poco::CWebServer>(webConf, webServerPath, "/rest/", "/ws"));
 
       webServer->getConfigurator()->websiteHandlerAddAlias("plugins", m_pathProvider.pluginsPath().string());
       webServer->getConfigurator()->websiteHandlerAddAlias("scriptInterpreters", scriptInterpretersPath);

@@ -569,7 +569,6 @@ set(YADOMS_SRC
 	server/web/ws/NewDeviceFrame.cpp
 	server/web/ws/TaskUpdateNotificationFrame.h
 	server/web/ws/TaskUpdateNotificationFrame.cpp
-
 )
 
 # Project folders
@@ -817,9 +816,17 @@ IF(USE_POCO_WEBSERVER)
 		server/web/poco/WebSocketRequestHandler.cpp	
 		server/web/poco/MimeType.h
 		server/web/poco/MimeType.cpp	
+      server/web/poco/WebServerConfiguration.h
+      server/web/poco/WebServerConfiguration.cpp
+      
+      server/web/poco/https/StringPrivateKeyPassphraseHandler.h
+      server/web/poco/https/StringPrivateKeyPassphraseHandler.cpp
+      server/web/poco/https/ConfigurationItems.h
+      server/web/poco/https/ConfigurationItems.cpp
 	)
 	
 	source_group(server\\web\\poco  server/web/poco/*.*)
+	source_group(server\\web\\poco\\https  server/web/poco/https/*.*)
 ENDIF()
 
 
