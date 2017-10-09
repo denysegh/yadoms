@@ -310,23 +310,17 @@ WidgetManager.loadWidgets = function (widgetList, pageWhereToAdd) {
     //When all view/viewModel off all requested types of widgets are loaded, 
     //then create widgets on page
     $.when.apply($, arrayOfDeffered)
-       .done(function () {
-           var arrayOfLoadingWidgetDeferred = [];
-           $.each(widgetList, function (index, widget) {
-               arrayOfLoadingWidgetDeferred.push(WidgetManager.loadWidget(widget, pageWhereToAdd));
-           });
+    .done(function () {
+        var arrayOfLoadingWidgetDeferred = [];
+        $.each(widgetList, function (index, widget) {
+            arrayOfLoadingWidgetDeferred.push(WidgetManager.loadWidget(widget, pageWhereToAdd));
+        });
 
-           $.when.apply($, arrayOfLoadingWidgetDeferred)
-           .done(function () {
-               d.resolve();
-           })
-           .fail(function (errorMessage) {
-               d.reject(errorMessage);
-           });
-       })
-       .fail(function (errorMessage) {
-           d.reject(errorMessage);
-       });
+        $.when.apply($, arrayOfLoadingWidgetDeferred)
+        .done(d.resolve)
+        .fail(d.reject);
+    })
+    .fail(d.reject);
 
     return d.promise();
 };

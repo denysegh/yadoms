@@ -255,10 +255,10 @@
                      ConfigurationManager.updateToServer(Yadoms.systemConfiguration[ConfigurationManager.items.system.language])
                      .done(function() {
                      
-                        if (i18n.lng()!= Yadoms.systemConfiguration[ConfigurationManager.items.system.language].value)
+                        if (i18next.language!= Yadoms.systemConfiguration[ConfigurationManager.items.system.language].value)
                         {
                            //we change language of i18n
-                           i18n.setLng(Yadoms.systemConfiguration[ConfigurationManager.items.system.language].value, function() {
+                           i18next.changeLanguage(Yadoms.systemConfiguration[ConfigurationManager.items.system.language].value, function() {
                               $("html").i18n();
                               window.location.reload();
                               d.resolve();
@@ -447,7 +447,7 @@
                               ConfigurationManager.updateToServer(Yadoms.systemConfiguration[ConfigurationManager.items.system.language])
                                  .done(function() {
                                     //we change language of i18n
-                                    i18n.setLng(Yadoms.systemConfiguration[ConfigurationManager.items.system.language].value, function() {
+                                    i18next.changeLanguage(Yadoms.systemConfiguration[ConfigurationManager.items.system.language].value, function() {
                                        $("html").i18n();
                                     });
 

@@ -115,7 +115,9 @@
     <script src="libs/jquery-ui-touch-punch/jquery.ui.touch-punch.min.js"></script>
     <script src="libs/bootstrap/js/bootstrap.min.js"></script>
     <script src="libs/knockout/js/knockout-3.4.0.js"></script>
-    <script src="libs/i18next/js/i18next-1.11.2.min.js"></script>
+    <script src="libs/i18next/js/i18next-9.1.0.min.js"></script>
+    <script src="libs/i18next/js/jquery-i18next.min.js"></script>
+    <script src="libs/i18next/js/i18nextXHRBackend.min.js"></script>
     <script src="libs/lazyload/js/lazyload.js"></script>
     <script src="libs/moment.js/js/moment-with-langs.min.js"></script>
     <script src="libs/moment.js/js/moment-timezone.min.js"></script>
@@ -236,6 +238,11 @@
              //we start i18n engine
              var option = {
                  resGetPath: "locales/__lng__.json",
+                 backend: {
+                  // load from i18next-gitbook repo
+                  addPath: 'locales/{{lng}}.json',
+                  loadPath: '{{ns}}/locales/{{lng}}.json'
+                },
                  fallbackLng: "en",
                  useDataAttrOptions: true,
                  debug: false,
@@ -243,7 +250,21 @@
                  load: 'unspecific',
                  getAsync: false
              };
-             i18n.init(option, function() {
+             i18next
+               .use(i18nextXHRBackend)
+//               .use(i18nextBrowserLanguageDetector)
+               .init(option, function() {
+                  jqueryI18next.init(i18next, $, {
+                    tName: 't', // --> appends $.t = i18next.t
+                    i18nName: 'i18n', // --> appends $.i18n = i18next
+                    handleName: 'i18n', // --> appends $(selector).localize(opts);
+                    selectorAttr: 'data-i18n', // selector for translating elements
+                    targetAttr: 'i18n-target', // data-() attribute to grab target element to translate (if diffrent then itself)
+                    optionsAttr: 'i18n-options', // data-() attribute that contains options, will load/set if useOptionsAttr = true
+                    useOptionsAttr: false, // see optionsAttr
+                    parseDefaultValueFromContent: true // parses default values from content ele.val or ele.text
+                  });
+             
                  //we get install/firstStart key to have information if firstStart has already been done
                  ConfigurationManager.get(ConfigurationManager.items.installSection, ConfigurationManager.items.install.firstStart)
                      .done(function() {
@@ -542,7 +563,7 @@
                   if (!isNullOrUndefined(result)) {
                       Yadoms.systemConfiguration = result;
                       //we set the right language
-                      i18n.setLng(Yadoms.systemConfiguration[ConfigurationManager.items.system.language].value, function() {
+                      i18next.changeLanguage(Yadoms.systemConfiguration[ConfigurationManager.items.system.language].value, function() {
                           $("html").i18n();
                           moment.lang(window.navigator.userLanguage || window.navigator.language);
                           waitForServerReady();

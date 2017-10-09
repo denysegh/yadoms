@@ -202,7 +202,7 @@
       .done(function () {
          var iconName;
          if (!device.attachedPlugin.isSystemCategory()) {
-            iconName = "plugins/" + device.attachedPlugin.type + "/icon.png";
+            iconName = "plugins\\" + device.attachedPlugin.type + "/icon.png";
             
             //disable it before async update
             $deviceRow.find("button.btn-configure").prop('disabled', true);
@@ -671,7 +671,7 @@
                }
             }
             else if(keyword.type.toLowerCase() === "enum") {
-               var translatedEnumValue = $.t("plugins/" + pluginInstance.type + ":enumerations." + keyword.typeInfo.name + ".values." + acquisition.value, { defaultValue:acquisition.value} );
+               var translatedEnumValue = $.t("plugins\\" + pluginInstance.type + ":enumerations." + keyword.typeInfo.name + ".values." + acquisition.value, { defaultValue:acquisition.value} );
                keywordValue = "<span>" + translatedEnumValue + "</span>";
             }
             else if(keyword.type.toLowerCase() === "json") {

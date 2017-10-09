@@ -289,13 +289,14 @@ PluginInstanceManager.downloadPackage = function (pluginInstance) {
             pluginInstance.package = data;
 
             //we manage i18n
-            i18n.options.resGetPath = '__ns__/locales/__lng__.json';
-            i18n.loadNamespace("plugins/" + pluginInstance.type);
+            //i18next.options.backend.addPath = '{{ns}}/locales/{{lng}}.json';
+            i18next.loadNamespaces("plugins\\" + pluginInstance.type, function(err,t){
+               //we restore the resGetPath
+               //i18next.options.backend.addPath = '';
 
-            //we restore the resGetPath
-            i18n.options.resGetPath = "locales/__lng__.json";
+               d.resolve();
+            });
 
-            d.resolve();
          })
          .fail(d.reject);
    } else {

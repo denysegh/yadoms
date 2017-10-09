@@ -64,7 +64,7 @@ AutomationInterpreterManager.getAllDetailed = function () {
              value.fillDetails(data);
           })
           .fail(function() {
-             notifyError($.t("objects.generic.errorGetting", {objectName : "scriptInterpreters/" + value + "/package.json"}));
+             notifyError($.t("objects.generic.errorGetting", {objectName : "scriptInterpreters\\" + value + "/package.json"}));
           });
       });
 

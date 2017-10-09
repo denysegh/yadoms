@@ -90,7 +90,7 @@ Blockly.Yadoms.BooleanOperators_ = [
 Blockly.Yadoms.LoadLanguageScript_ = function (callback) {
 
    //first try to load user specific language
-   var currentLng = i18n.options.lng.substring(0, 2);
+   var currentLng = i18next.language.substring(0, 2);
    $.getScript("libs/blockly/js/locales/" + currentLng + ".js")
        .done(function () {
           callback();
@@ -98,12 +98,12 @@ Blockly.Yadoms.LoadLanguageScript_ = function (callback) {
        .fail(function () {
           console.warn("Fail to load Blockly for " + currentLng);
           //if it fails, load english one
-          $.getScript("libs/blockly/js/locales/" + i18n.options.fallbackLng + ".js")
+          $.getScript("libs/blockly/js/locales/" + i18next.options.fallbackLng[0] + ".js")
               .done(function () {
                  callback();
               })
               .fail(function () {
-                 console.error("Fail to load Blockly for " + i18n.options.fallbackLng);
+                 console.error("Fail to load Blockly for " + i18next.options.fallbackLng[0]);
                  callback();
               });
        });

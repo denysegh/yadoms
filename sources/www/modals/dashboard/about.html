@@ -208,7 +208,7 @@
                      if( (!data.developerMode && !key.startsWith("dev-")) || data.developerMode) {
                         var value = packageList[key];
                         
-                        tabPlugins.push ( {plugin: value, friendlyName: $.t("plugins/" + value.type + ":name" ) });
+                        tabPlugins.push ( {plugin: value, friendlyName: $.t("plugins\\" + value.type + ":name" ) });
                      }
                    });
                    
