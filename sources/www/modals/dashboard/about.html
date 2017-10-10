@@ -240,7 +240,7 @@
                
                if ((!value.type.startsWith("system-")) && ((data.developerMode) || (!value.type.startsWith("dev-")))) {
                        var i18NContext = value.type + ":";
-                  WidgetList.push ( {displayName: $.t("widgets/" + i18NContext + "name"), widget: value} );
+                  WidgetList.push ( {displayName: $.t("widgets\\" + i18NContext + "name"), widget: value} );
                }
             }
          }

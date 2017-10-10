@@ -375,7 +375,7 @@
                         // 1. try plugin one
                         // 2. try core
                         // 3. try directly
-                        var translatedMessage = $.t("plugins\\\\" + pi.type + ":" + taskUpdateInformation.message, {
+                        var translatedMessage = $.t("plugins\\" + pi.type + ":" + taskUpdateInformation.message, {
                            defaultValue: $.t("core." + taskUpdateInformation.message, {
                               defaultValue: $.t(taskUpdateInformation.message), 
                               extraquery : $.t(taskUpdateInformation.name)

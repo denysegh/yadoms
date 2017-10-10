@@ -158,25 +158,25 @@ widgetViewModelCtor =
                    activated: true,
                    displayTitle: true,
                    items: [
-                   { custom: "<div class=\"widget-toolbar-button range-btn\" interval=\"HOUR\"><span data-i18n=\"widgets/chart:navigator.hour\"/></div>" },
-                   { custom: "<div class=\"widget-toolbar-button range-btn\" interval=\"DAY\"><span data-i18n=\"widgets/chart:navigator.day\"/></div>"},
-                   { custom: "<div class=\"widget-toolbar-button range-btn\" interval=\"WEEK\"><span data-i18n=\"widgets/chart:navigator.week\"/></div>"},
-                   { custom: "<div class=\"widget-toolbar-button range-btn\" interval=\"MONTH\"><span data-i18n=\"widgets/chart:navigator.month\"/></div>"},
-                   { custom: "<div class=\"widget-toolbar-button range-btn\" interval=\"HALF_YEAR\"><span data-i18n=\"widgets/chart:navigator.half_year\"/></div>"},
-                   { custom: "<div class=\"widget-toolbar-button range-btn\" interval=\"YEAR\"><span data-i18n=\"widgets/chart:navigator.year\"/></div>" },
+                   { custom: "<div class=\"widget-toolbar-button range-btn\" interval=\"HOUR\"><span data-i18n=\"widgets\\chart:navigator.hour\"/></div>" },
+                   { custom: "<div class=\"widget-toolbar-button range-btn\" interval=\"DAY\"><span data-i18n=\"widgets\\chart:navigator.day\"/></div>"},
+                   { custom: "<div class=\"widget-toolbar-button range-btn\" interval=\"WEEK\"><span data-i18n=\"widgets\\chart:navigator.week\"/></div>"},
+                   { custom: "<div class=\"widget-toolbar-button range-btn\" interval=\"MONTH\"><span data-i18n=\"widgets\\chart:navigator.month\"/></div>"},
+                   { custom: "<div class=\"widget-toolbar-button range-btn\" interval=\"HALF_YEAR\"><span data-i18n=\"widgets\\chart:navigator.half_year\"/></div>"},
+                   { custom: "<div class=\"widget-toolbar-button range-btn\" interval=\"YEAR\"><span data-i18n=\"widgets\\chart:navigator.year\"/></div>" },
                    { separator: ""},
                    { custom: "<div class=\"widget-toolbar-button export-btn dropdown\">" +
                                 "<a id=\"chartExportMenu" + self.widget.id + "\" data-target=\"#\" class=\"widget-toolbar-button export-btn dropdown\" role=\"button\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\">" +
                                     "<span class=\"fa fa-bars\"/>" +
                                 "</a>" +
                                 "<ul class=\"dropdown-menu\" aria-labelledby=\"chartExportMenu" + self.widget.id + "\">" +
-                                    "<li><span class=\"print-command\" data-i18n=\"widgets/chart:export.print\"></span></li>" +
+                                    "<li><span class=\"print-command\" data-i18n=\"widgets\\chart:export.print\"></span></li>" +
                                     "<li role=\"separator\" class=\"divider\"></li>" +
-                                    "<li><span class=\"export-command\" data-i18n=\"widgets/chart:export.png\" mime-type=\"image/png\"></span></li>" +
-                                    "<li><span class=\"export-command\" data-i18n=\"widgets/chart:export.jpeg\" mime-type=\"image/jpeg\"></span></li>" +
-                                    "<li><span class=\"export-command\" data-i18n=\"widgets/chart:export.svg\" mime-type=\"image/svg+xml\"></span></li>" +
-                                    "<li><span class=\"export-command\" data-i18n=\"widgets/chart:export.csv\" mime-type=\"text/csv\"></span></li>" +
-                                    "<li><span class=\"export-command\" data-i18n=\"widgets/chart:export.xls\" mime-type=\"application/vnd.ms-excel\"></span></li>" +
+                                    "<li><span class=\"export-command\" data-i18n=\"widgets\\chart:export.png\" mime-type=\"image/png\"></span></li>" +
+                                    "<li><span class=\"export-command\" data-i18n=\"widgets\\chart:export.jpeg\" mime-type=\"image/jpeg\"></span></li>" +
+                                    "<li><span class=\"export-command\" data-i18n=\"widgets\\chart:export.svg\" mime-type=\"image/svg+xml\"></span></li>" +
+                                    "<li><span class=\"export-command\" data-i18n=\"widgets\\chart:export.csv\" mime-type=\"text/csv\"></span></li>" +
+                                    "<li><span class=\"export-command\" data-i18n=\"widgets\\chart:export.xls\" mime-type=\"application/vnd.ms-excel\"></span></li>" +
                                 "</ul>" +
                              "</div>"
                        }
@@ -190,6 +190,7 @@ widgetViewModelCtor =
 
                self.widgetApi.find(".print-command").unbind("click").bind("click", function () {
                    self.chart.print();
+                   location.reload();
                });
 
                self.widgetApi.find(".export-command").unbind("click").bind("click", function (e) {
@@ -201,7 +202,7 @@ widgetViewModelCtor =
                    }
                    catch(error)
                    {
-                      notifyError($.t("widgets/chart:formatNotSupported", {format: $(e.currentTarget).attr("mime-type")}));
+                      notifyError($.t("widgets\\chart:formatNotSupported", {format: $(e.currentTarget).attr("mime-type")}));
                    }
                });
                
@@ -215,8 +216,8 @@ widgetViewModelCtor =
                });
            })
            .fail(function (error) {
-               notifyError($.t("widgets/chart:errorInitialization"), error);
-               throw $.t("widgets/chart:errorInitialization");
+               notifyError($.t("widgets\\chart:errorInitialization"), error);
+               throw $.t("widgets\\chart:errorInitialization");
                d.reject();
            });
            return d.promise();
@@ -359,7 +360,7 @@ widgetViewModelCtor =
                   
                   if (self.differentialDisplay[index] && device.content.PlotType === "arearange")
                   {
-                     notifyError($.t("widgets/chart:incompatibilityDifferential"), "error");
+                     notifyError($.t("widgets\\chart:incompatibilityDifferential"), "error");
                      self.incompatibility = true;
                      return;
                   }
@@ -385,8 +386,8 @@ widgetViewModelCtor =
                });
            })
            .fail(function (error) {
-               notifyError($.t("widgets/chart:errorInitialization"), error);
-               throw $.t("widgets/chart:errorInitialization");
+               notifyError($.t("widgets\\chart:errorInitialization"), error);
+               throw $.t("widgets\\chart:errorInitialization");
                d.reject();
            });           
            
@@ -446,7 +447,7 @@ widgetViewModelCtor =
 
                try {
                    if (!self.refreshingData) {
-                       self.chart.showLoading($.t("widgets/chart:loadingData"));
+                       self.chart.showLoading($.t("widgets\\chart:loadingData"));
                        self.refreshingData = true;
                        //we compute the date from the configuration
                        var dateFrom = "";
@@ -538,7 +539,7 @@ widgetViewModelCtor =
                                    case "HALF_YEAR":
                                    case "YEAR":
                                        // Display that the range is too large
-                                       self.chart.showLoading($.t("widgets/chart:RangeTooBroad"));
+                                       self.chart.showLoading($.t("widgets\\chart:RangeTooBroad"));
                                        displayData = false;
                                        self.refreshingData = false;
                                        break;
@@ -843,7 +844,7 @@ widgetViewModelCtor =
                                    self.refreshingData = false;
                                })
                                .fail(function (error) {
-                                  notifyError($.t("widgets/chart:errorDuringGettingDeviceData"), error);
+                                  notifyError($.t("widgets\\chart:errorDuringGettingDeviceData"), error);
                                   d.reject();
                                });
                            }
@@ -854,7 +855,7 @@ widgetViewModelCtor =
                            d.resolve();
                        })
                       .fail(function (error) {
-                         notifyError($.t("widgets/chart:errorDuringGettingDeviceData"), error);
+                         notifyError($.t("widgets\\chart:errorDuringGettingDeviceData"), error);
                          d.reject();
                       });                       
                    }
@@ -881,10 +882,10 @@ widgetViewModelCtor =
 
            // If for all data, length == 0, we display no Data Available
            if (noAvailableData && !self.incompatibility) {
-               self.chart.showLoading($.t("widgets/chart:noAvailableData"));
+               self.chart.showLoading($.t("widgets\\chart:noAvailableData"));
            }
            else if (self.incompatibility) {
-              self.chart.showLoading($.t("widgets/chart:incompatibilityDifferential"));
+              self.chart.showLoading($.t("widgets\\chart:incompatibilityDifferential"));
            }
            else {
                self.chart.hideLoading();
