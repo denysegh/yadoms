@@ -124,10 +124,16 @@ public:
    static std::vector<boost::shared_ptr<const yApi::historization::IHistorizable>> extractActuatorStatusResponse(unsigned char rorg,
                                                                                                                  const boost::dynamic_bitset<>& data,
                                                                                                                  boost::shared_ptr<yApi::historization::CSwitch> channel1,
-                                                                                                                 boost::shared_ptr<yApi::historization::CSwitch> channel2,
                                                                                                                  boost::shared_ptr<yApi::historization::CDimmable> dimmer,
                                                                                                                  boost::shared_ptr<yApi::historization::CSwitch> powerFailure,
                                                                                                                  boost::shared_ptr<yApi::historization::CSwitch> overCurrent);
+   static std::vector<boost::shared_ptr<const yApi::historization::IHistorizable>> extractActuatorStatusResponse2Channels(unsigned char rorg,
+                                                                                                                          const boost::dynamic_bitset<>& data,
+                                                                                                                          boost::shared_ptr<yApi::historization::CSwitch> channel1,
+                                                                                                                          boost::shared_ptr<yApi::historization::CSwitch> channel2,
+                                                                                                                          boost::shared_ptr<yApi::historization::CDimmable> dimmer,
+                                                                                                                          boost::shared_ptr<yApi::historization::CSwitch> powerFailure,
+                                                                                                                          boost::shared_ptr<yApi::historization::CSwitch> overCurrent);
 
    // CMD 0x5 - Actuator Set Measurement
    static void sendActuatorSetMeasurementCommand(boost::shared_ptr<IMessageHandler> messageHandler,
