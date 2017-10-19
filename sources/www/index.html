@@ -247,12 +247,13 @@
                  useDataAttrOptions: true,
                  debug: false,
                  fallbackNS: "translation",
-                 load: 'unspecific',
-                 getAsync: false
+                 load: 'languageOnly',
+                 getAsync: false,
+                 useLocalStorage: true,
+                 localStorageExpirationTime: 86400000 // in ms, default 1 week
              };
              i18next
                .use(i18nextXHRBackend)
-//               .use(i18nextBrowserLanguageDetector)
                .init(option, function() {
                   jqueryI18next.init(i18next, $, {
                     tName: 't', // --> appends $.t = i18next.t

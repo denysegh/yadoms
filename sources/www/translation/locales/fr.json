@@ -1061,7 +1061,7 @@
         "failToCommunicateWithHardware" : "Impossible de communiquer avec le matériel. Vérififez la présence du matériel ainsi que sa configuration",
         "connectionClosed" : "Connexion avec le matériel terminée (liaison série)",
         "connectionError" : "Erreur de connexion avec le matériel (liaison série)",
-        "failToOpen" : "Impossible d'ouvrir la liaison série __port__. Vérififez le matériel ou la configuration."
+        "failToOpen" : "Impossible d'ouvrir la liaison série {{port}}. Vérififez le matériel ou la configuration."
      }
   },
   "system": {

@@ -1061,7 +1061,7 @@
         "failToCommunicateWithHardware" : "Unable to communicate with hardware. Check the hardware and its configuration",
         "connectionClosed" : "Connection with hardware closed (serial link)",
         "connectionError" : "Hardware connection error (serial link)",
-        "failToOpen" : "Unable to open serial link __port__. Check hardware or configuration."
+        "failToOpen" : "Unable to open serial link {{port}}. Check hardware or configuration."
      }
   },
   "system": {
