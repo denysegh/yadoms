@@ -37,7 +37,7 @@ UpdateInformationManager.getList = function(objectType) {
 
    var d = new $.Deferred();
 
-   RestEngine.getJson("rest/update/" + objectType + "/list/" + i18next.language)
+   RestEngine.getJson("rest/update/" + objectType + "/list/" + i18next.language.substring(0, 2))
    .done(function(data) {
       var result = {};
       $.each(data, function(index, value) {

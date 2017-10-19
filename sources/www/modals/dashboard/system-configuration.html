@@ -255,7 +255,7 @@
                      ConfigurationManager.updateToServer(Yadoms.systemConfiguration[ConfigurationManager.items.system.language])
                      .done(function() {
                      
-                        if (i18next.language!= Yadoms.systemConfiguration[ConfigurationManager.items.system.language].value)
+                        if (i18next.language.substring(0, 2) != Yadoms.systemConfiguration[ConfigurationManager.items.system.language].value)
                         {
                            //we change language of i18n
                            i18next.changeLanguage(Yadoms.systemConfiguration[ConfigurationManager.items.system.language].value, function() {

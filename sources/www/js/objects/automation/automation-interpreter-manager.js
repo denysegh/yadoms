@@ -53,8 +53,6 @@ AutomationInterpreterManager.getAllDetailed = function () {
 
       var deferredArray =[];
 
-      i18n.options.resGetPath = '__ns__/locales/__lng__.json';
-      
       //for each name we get the package.json file and append it to the associative array
       Object.keys(interpreters).forEach(function (key) {
          //this thread will ask for synchronous package.json requests
@@ -66,7 +64,7 @@ AutomationInterpreterManager.getAllDetailed = function () {
          //we restore the resGetPath
          var d = new $.Deferred();
          deferredArray.push(d);
-         i18n.loadNamespace("scriptInterpreters/" + value.type, function() { d.resolve(); });
+         i18next.loadNamespaces("scriptInterpreters\\" + value.type, function() { d.resolve(); });
          
          deferred.done(function (data) {
              value.fillDetails(data);
@@ -78,7 +76,6 @@ AutomationInterpreterManager.getAllDetailed = function () {
 
       $.whenAll(deferredArray)
       .done(function() {
-         i18n.options.resGetPath = "locales/__lng__.json";
          d.resolve(interpreters);
       });
    })
