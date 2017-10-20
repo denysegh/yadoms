@@ -715,12 +715,3 @@ WidgetManager.createGridWidget = function (widget) {
 WidgetManager.updateWidgetLayout = function (widget) {
     widget.$gridWidget.find(".textfit").fitText();
 };
-
-/**
- * Refresh widgets
- */
-WidgetManager.refreshWidgets = function (widget) {
-	if (widget.viewModel.configurationChanged !== undefined) {
-	   widget.viewModel.configurationChanged();
-	}	
-};
