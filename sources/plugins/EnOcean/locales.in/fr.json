@@ -398,8 +398,8 @@
           }
         },
         "alarmAction": {
-          "name": "Alarm Action",
-          "description": "Action to perform in case of alarm",
+          "name": "Action d'alarme",
+          "description": "Action à réaliser en cas d'alarme",
           "values": {
             "unchanged": "Inchangé",
             "noAction": "Ne rien faire",

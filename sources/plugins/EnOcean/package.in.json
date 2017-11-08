@@ -603,6 +603,7 @@
               "type": "decimal",
               "minimumValue": "5.0",
               "maximumValue": "300.0",
+              "defaultValue": "40.0",
               "precision": "2"
             }
           }
@@ -618,6 +619,7 @@
               "type": "decimal",
               "minimumValue": "0.01",
               "maximumValue": "2.54",
+              "defaultValue": "1.0",
               "precision": "2"
             }
           }

@@ -11,11 +11,11 @@ namespace specificHistorizers
       ((Alarm))
    );
 
+   DECLARE_CAPACITY(BlindLockingModeCapacity, "LockingMode", shared::plugin::yPluginApi::CStandardUnits::NoUnit(), shared::plugin::yPluginApi::EKeywordDataType::kEnum);
+
    CBlindLockingModeHistorizer::CBlindLockingModeHistorizer(const std::string& keywordName)
       : CSingleHistorizableData<EBlindLockingMode>(keywordName,
-                                                   shared::plugin::yPluginApi::CStandardCapacity("LockingMode",
-                                                                                                 shared::plugin::yPluginApi::CStandardUnits::NoUnit(),
-                                                                                                 shared::plugin::yPluginApi::EKeywordDataType::kEnum),
+                                                   BlindLockingModeCapacity(),
                                                    shared::plugin::yPluginApi::EKeywordAccessMode::kGetSet,
                                                    EBlindLockingMode::kNormal)
    {

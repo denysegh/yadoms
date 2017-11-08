@@ -236,6 +236,7 @@ for xmlRorgNode in xmlProfileNode.findall("rorg"):
             historizerEnumName = "E" + cppHelper.toCppName(xmlTypeNode.find("title").text) + "_" + cppHelper.toCppName(xmlDataFieldNode.find("data").text) + "_" + cppHelper.toCppName(xmlDataFieldNode.find("data").text)
             cppHistorizerClass = cppClass.CppClass(cppHistorizerClassName, createDefaultCtor=False)
             cppHistorizerClass.inheritFrom("yApi::historization::CSingleHistorizableData<" + historizerEnumName + ">", cppClass.PUBLIC)
+            //TOFIX : utiliser DECLARE_CAPACITY
             cppHistorizerClass.addConstructor(cppClass.CppClassConstructor("const std::string& keywordName", \
                "CSingleHistorizableData<" + historizerEnumName + ">(keywordName, yApi::CStandardCapacity(\"" + historizerEnumName + "\", yApi::CStandardUnits::NoUnit(), yApi::EKeywordDataType::kNoData), yApi::EKeywordAccessMode::kGet)"))
             cppHistorizerClass.addDependency(cppClass.CppExtendedEnumType(historizerEnumName, enumValues))
