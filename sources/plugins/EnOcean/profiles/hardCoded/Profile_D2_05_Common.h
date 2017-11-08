@@ -2,25 +2,13 @@
 #include <shared/plugin/yPluginApi/IYPluginApi.h>
 #include <shared/enumeration/EnumHelpers.hpp>
 #include "../../IMessageHandler.h"
+#include "specificHistorizers/BlindLockingModeHistorizer.h"
 
 namespace yApi = shared::plugin::yPluginApi;
 
 class CProfile_D2_05_Common
 {
 public:
-   DECLARE_ENUM_HEADER(EDefaultState,
-      ((off)(0))
-      ((on)(1))
-      ((previousState)(2))
-      ((notUsed)(3))
-   ) ;//TODO virer ?
-
-   DECLARE_ENUM_HEADER(EConnectedSwitchsType,
-      ((switch)(1))
-      ((pushButton)(2))
-      ((autodetection)(3))
-   ) ;//TODO virer ?
-
    enum E_D2_05_Command
    {
       kGoToPositionAndAngle = 1,
@@ -52,9 +40,10 @@ public:
 
    // CMD 4 - Reply Position and Angle
    static std::vector<boost::shared_ptr<const yApi::historization::IHistorizable>> extractReplyPositionAndAngle(unsigned char rorg,
-                                                                                                                 const boost::dynamic_bitset<>& data,
-                                                                                                                 boost::shared_ptr<yApi::historization::CCurtain> state,
-                                                                                                                 boost::shared_ptr<yApi::historization::CDimmable> value);
+                                                                                                                const boost::dynamic_bitset<>& data,
+                                                                                                                boost::shared_ptr<yApi::historization::CCurtain> state,
+                                                                                                                boost::shared_ptr<yApi::historization::CDimmable> value,
+                                                                                                                boost::shared_ptr<specificHistorizers::CBlindLockingModeHistorizer> mode);
 
 
    static void sendMessage(boost::shared_ptr<IMessageHandler> messageHandler, //TODO factoriser avec Profile_D2_01_Common.h ?

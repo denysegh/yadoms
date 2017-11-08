@@ -7,7 +7,8 @@ CProfile_D2_05_00::CProfile_D2_05_00(const std::string& deviceId,
    : m_deviceId(deviceId),
      m_state(boost::make_shared<yApi::historization::CCurtain>("state")),
      m_value(boost::make_shared<yApi::historization::CDimmable>("value")),
-     m_historizers({m_state})
+     m_mode(boost::make_shared<specificHistorizers::CBlindLockingModeHistorizer>("mode")),
+     m_historizers({m_state, m_value, m_mode})
 {
 }
 
@@ -51,7 +52,8 @@ std::vector<boost::shared_ptr<const yApi::historization::IHistorizable>> CProfil
    return CProfile_D2_05_Common::extractReplyPositionAndAngle(rorg,
                                                               data,
                                                               m_state,
-                                                              m_value);
+                                                              m_value,
+                                                              m_mode);
 }
 
 void CProfile_D2_05_00::sendCommand(const std::string& keyword,

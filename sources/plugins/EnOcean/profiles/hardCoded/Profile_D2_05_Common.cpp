@@ -6,19 +6,6 @@
 #include <shared/Log.h>
 #include "Profile_D2_01_Common.h"
 
-DECLARE_ENUM_IMPLEMENTATION_NESTED(CProfile_D2_05_Common::EDefaultState, EDefaultState,
-   ((off))
-   ((on))
-   ((previousState))
-   ((notUsed))
-);
-
-DECLARE_ENUM_IMPLEMENTATION_NESTED(CProfile_D2_05_Common::EConnectedSwitchsType, EConnectedSwitchsType,
-   ((switch))
-   ((pushButton))
-   ((autodetection))
-);
-
 
 void CProfile_D2_05_Common::sendGoToPositionAndAngle(boost::shared_ptr<IMessageHandler> messageHandler,
                                                      const std::string& senderId,
@@ -97,7 +84,8 @@ void CProfile_D2_05_Common::sendQueryPositionAndAngle(boost::shared_ptr<IMessage
 std::vector<boost::shared_ptr<const yApi::historization::IHistorizable>> CProfile_D2_05_Common::extractReplyPositionAndAngle(unsigned char rorg,
                                                                                                                              const boost::dynamic_bitset<>& data,
                                                                                                                              boost::shared_ptr<yApi::historization::CCurtain> state,
-                                                                                                                             boost::shared_ptr<yApi::historization::CDimmable> value)
+                                                                                                                             boost::shared_ptr<yApi::historization::CDimmable> value,
+                                                                                                                             boost::shared_ptr<specificHistorizers::CBlindLockingModeHistorizer> mode)
 {
    // Some devices supports several RORG telegrams, ignore non-VLD telegrams
    if (rorg != CRorgs::ERorgIds::kVLD_Telegram)
@@ -112,10 +100,10 @@ std::vector<boost::shared_ptr<const yApi::historization::IHistorizable>> CProfil
    auto ioChannel = bitset_extract(data, 24, 4);
    int posValue = bitset_extract(data, 1, 7);
    int angValue = bitset_extract(data, 9, 7);
-   auto mode = bitset_extract(data, 21, 3);
+   auto lockingMode = bitset_extract(data, 21, 3);
 
    if (ioChannel != 0)
-      YADOMS_LOG(warning) << "ReplyPositionAndAngle : received unsupported ioChannel value " << ioChannel;
+   YADOMS_LOG(warning) << "ReplyPositionAndAngle : received unsupported ioChannel value " << ioChannel;
 
    enum
    {
@@ -152,7 +140,34 @@ std::vector<boost::shared_ptr<const yApi::historization::IHistorizable>> CProfil
       }
    }
 
-   //TODO retourner les modes ?
+   if (!!mode)
+   {
+      enum ELockingMode
+      {
+         kNormal = 0,
+         kBlockage = 1,
+         kAlarm = 2
+      };
+
+      switch (lockingMode)
+      {
+      case kNormal:
+         mode->set(specificHistorizers::EBlindLockingMode::kNormal);
+         historizers.push_back(mode);
+         break;
+      case kBlockage:
+         mode->set(specificHistorizers::EBlindLockingMode::kBlockage);
+         historizers.push_back(mode);
+         break;
+      case kAlarm:
+         mode->set(specificHistorizers::EBlindLockingMode::kAlarm);
+         historizers.push_back(mode);
+         break;
+      default:
+         YADOMS_LOG(error) << "Unsupported received locking mode";
+         break;
+      }
+   }
 
    return historizers;
 }
