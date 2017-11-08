@@ -136,7 +136,7 @@ void CSupervisor::run()
       webServer->start();
 
       // Start the plugin manager (start all plugin instances)
-      pluginManager->start(boost::posix_time::minutes(2));
+      pluginManager->start(boost::posix_time::seconds(40));
 
       //start the rule manager
       automationRulesManager->start();
