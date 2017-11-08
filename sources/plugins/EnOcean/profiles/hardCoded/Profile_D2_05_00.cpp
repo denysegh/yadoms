@@ -61,27 +61,45 @@ void CProfile_D2_05_00::sendCommand(const std::string& keyword,
                                     const std::string& senderId,
                                     boost::shared_ptr<IMessageHandler> messageHandler) const
 {
-   if (keyword != m_state->getKeyword())
-      return;
-
-   m_state->setCommand(commandBody);
-
-   switch (m_state->get())
+   if (keyword == m_state->getKeyword())
    {
-   case yApi::historization::ECurtainCommand::kOpenValue:
-   case yApi::historization::ECurtainCommand::kCloseValue:
+      m_state->setCommand(commandBody);
+
+      switch (m_state->get())
+      {
+      case yApi::historization::ECurtainCommand::kOpenValue:
+      case yApi::historization::ECurtainCommand::kCloseValue:
+         CProfile_D2_05_Common::sendGoToPositionAndAngle(messageHandler,
+                                                         senderId,
+                                                         m_deviceId,
+                                                         m_state->get());
+         break;
+      case yApi::historization::ECurtainCommand::kStopValue:
+         CProfile_D2_05_Common::sendStop(messageHandler,
+                                         senderId,
+                                         m_deviceId);
+         break;
+      default:
+         throw std::invalid_argument((boost::format("Unsupported curtain state %1%") % m_state->get()).str());
+      }
+   }
+   else if (keyword == m_value->getKeyword())
+   {
+      m_value->setCommand(commandBody);
+
       CProfile_D2_05_Common::sendGoToPositionAndAngle(messageHandler,
                                                       senderId,
                                                       m_deviceId,
-                                                      m_state->get());
-      break;
-   case yApi::historization::ECurtainCommand::kStopValue:
-      CProfile_D2_05_Common::sendStop(messageHandler,
-                                      senderId,
-                                      m_deviceId);
-      break;
-   default:
-      throw std::invalid_argument((boost::format("Unsupported curtain state %1%") % m_state->get()).str());
+                                                      m_value->get());
+   }
+   else if (keyword == m_mode->getKeyword())
+   {
+      m_mode->setCommand(commandBody);
+
+      CProfile_D2_05_Common::sendGoToPositionAndAngle(messageHandler,
+                                                      senderId,
+                                                      m_deviceId,
+                                                      m_mode->get());
    }
 }
 
