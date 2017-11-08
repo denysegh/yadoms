@@ -197,6 +197,27 @@ std::vector<boost::shared_ptr<const yApi::historization::IHistorizable>> CProfil
    return historizers;
 }
 
+void CProfile_D2_05_Common::sendSetParameters(boost::shared_ptr<IMessageHandler> messageHandler,
+                                              const std::string& senderId,
+                                              const std::string& targetId,
+                                              unsigned int measuredDurationOfVerticalRunMs,
+                                              unsigned int measuredDurationOfRotationMs,
+                                              unsigned int alarmActionValue)
+{
+   boost::dynamic_bitset<> userData(5 * 8);
+   bitset_insert(userData, 1, 15, measuredDurationOfVerticalRunMs);
+   bitset_insert(userData, 16, 8, measuredDurationOfRotationMs);
+   bitset_insert(userData, 29, 3, alarmActionValue);
+   bitset_insert(userData, 32, 4, 0); // Channel : Channel 1
+   bitset_insert(userData, 36, 4, kSetParameters);
+
+   sendMessage(messageHandler,
+               senderId,
+               targetId,
+               userData,
+               "Set Parameters");
+}
+
 void CProfile_D2_05_Common::sendMessage(boost::shared_ptr<IMessageHandler> messageHandler,
                                         const std::string& senderId,
                                         const std::string& targetId,

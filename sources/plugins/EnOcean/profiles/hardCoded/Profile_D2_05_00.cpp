@@ -107,6 +107,42 @@ void CProfile_D2_05_00::sendConfiguration(const shared::CDataContainer& deviceCo
                                           const std::string& senderId,
                                           boost::shared_ptr<IMessageHandler> messageHandler) const
 {
-   //TODO
-   // Device supports no configuration
+   enum
+   {
+      kDontChangeMeasureDurationOfVerticalRun = 32767,
+      kDontChangeMeasureDurationOfRotation = 255
+   };
+   auto measuredDurationOfVerticalRunValue = deviceConfiguration.get<bool>("measuredDurationOfVerticalRun.checkbox")
+                                                ? static_cast<unsigned int>(deviceConfiguration.get<double>("measuredDurationOfVerticalRun.content.value") * 100)
+                                                : kDontChangeMeasureDurationOfVerticalRun;
+   auto measuredDurationOfRotationValue = deviceConfiguration.get<bool>("measuredDurationOfRotation.checkbox")
+                                             ? static_cast<unsigned int>(deviceConfiguration.get<double>("measuredDurationOfRotation.content.value") * 100)
+                                             : kDontChangeMeasureDurationOfRotation;
+   auto alarmActionValue = deviceConfiguration.get<std::string>("alarmAction");
+   enum EAlarmAction
+   {
+      kNoAction = 0,
+      kImmediateStop = 1,
+      kGoUp = 2,
+      kGoDown = 3,
+      kNoChange = 7
+   };
+   EAlarmAction alarmAction;
+   if (alarmActionValue == "noAction")
+      alarmAction = kNoAction;
+   else if (alarmActionValue == "immediateStop")
+      alarmAction = kImmediateStop;
+   else if (alarmActionValue == "goUp")
+      alarmAction = kGoUp;
+   else if (alarmActionValue == "goDown")
+      alarmAction = kGoDown;
+   else
+      alarmAction = kNoChange;
+
+   CProfile_D2_05_Common::sendSetParameters(messageHandler,
+                                            senderId,
+                                            m_deviceId,
+                                            measuredDurationOfVerticalRunValue,
+                                            measuredDurationOfRotationValue,
+                                            alarmAction);
 }

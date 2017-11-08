@@ -374,6 +374,41 @@
     },
     "D2-01-12": {
       "sameAs": "D2-01-0F"
+    },
+    "D2-05-00": {
+      "content": {
+        "measuredDurationOfVerticalRun": {
+          "name": "Change measured duration of vertical run",
+          "description": "Use this parameter to update the measured duration of a full vertical run",
+          "content": {
+            "value": {
+              "name": "Measured duration",
+              "description": "seconds"
+            }
+          }
+        },
+        "measuredDurationOfRotation": {
+          "name": "Change measured duration of a rotation",
+          "description": "Use this parameter to update the measured duration of a full rotation",
+          "content": {
+            "value": {
+              "name": "Measured duration",
+              "description": "seconds"
+            }
+          }
+        },
+        "alarmAction": {
+          "name": "Alarm Action",
+          "description": "Action to perform in case of alarm",
+          "values": {
+            "unchanged": "Unchanged",
+            "noAction": "No action",
+            "immediateStop": "Immediate stop",
+            "goUp": "Go up",
+            "goDown": "Go down"
+          }
+        }
+      }
     }
   }
 }

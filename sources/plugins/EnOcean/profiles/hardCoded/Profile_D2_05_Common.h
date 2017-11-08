@@ -1,6 +1,5 @@
 #pragma once
 #include <shared/plugin/yPluginApi/IYPluginApi.h>
-#include <shared/enumeration/EnumHelpers.hpp>
 #include "../../IMessageHandler.h"
 #include "specificHistorizers/BlindLockingModeHistorizer.h"
 
@@ -48,6 +47,14 @@ public:
                                                                                                                 boost::shared_ptr<yApi::historization::CCurtain> state,
                                                                                                                 boost::shared_ptr<yApi::historization::CDimmable> value,
                                                                                                                 boost::shared_ptr<specificHistorizers::CBlindLockingModeHistorizer> mode);
+
+   // CMD 5 - Set parameters
+   static void sendSetParameters(boost::shared_ptr<IMessageHandler> messageHandler,
+                                 const std::string& senderId,
+                                 const std::string& targetId,
+                                 unsigned int measuredDurationOfVerticalRunMs,
+                                 unsigned int measuredDurationOfRotationMs,
+                                 unsigned int alarmActionValue);
 
 
    static void sendMessage(boost::shared_ptr<IMessageHandler> messageHandler, //TODO factoriser avec Profile_D2_01_Common.h ?

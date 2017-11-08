@@ -588,6 +588,53 @@
     },
     "D2-01-12": {
       "sameAs": "D2-01-0F"
+    },
+    "D2-05-00": {
+      "type": "section",
+      "content": {
+        "measuredDurationOfVerticalRun": {
+          "name": "Change measured duration of vertical run",
+          "type": "section",
+          "enableWithCheckBox": "true",
+          "enableWithCheckBoxDefaultValue": "false",
+          "content": {
+            "value": {
+              "name": "value",
+              "type": "decimal",
+              "minimumValue": "5.0",
+              "maximumValue": "300.0",
+              "precision": "2"
+            }
+          }
+        },
+        "measuredDurationOfRotation": {
+          "name": "Change measured duration of a rotation",
+          "type": "section",
+          "enableWithCheckBox": "true",
+          "enableWithCheckBoxDefaultValue": "false",
+          "content": {
+            "value": {
+              "name": "value",
+              "type": "decimal",
+              "minimumValue": "0.01",
+              "maximumValue": "2.54",
+              "precision": "2"
+            }
+          }
+        },
+        "alarmAction": {
+          "name": "Alarm Action",
+          "type": "enum",
+          "values": {
+            "unchanged": "Unchanged",
+            "noAction": "No action",
+            "immediateStop": "Immediate stop",
+            "goUp": "Go up",
+            "goDown": "Go down"
+          },
+          "defaultValue": "Unchanged"
+        }
+      }
     }
   }
 }
