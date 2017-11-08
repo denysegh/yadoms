@@ -27,6 +27,10 @@ public:
                                         const std::string& senderId,
                                         const std::string& targetId,
                                         unsigned int dimValue);
+   static void sendGoToPositionAndAngle(boost::shared_ptr<IMessageHandler> messageHandler,
+                                        const std::string& senderId,
+                                        const std::string& targetId,
+                                        specificHistorizers::EBlindLockingMode mode);
 
    // CMD 2 - Stop
    static void sendStop(boost::shared_ptr<IMessageHandler> messageHandler,

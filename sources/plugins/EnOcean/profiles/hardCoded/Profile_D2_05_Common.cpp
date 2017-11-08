@@ -51,6 +51,31 @@ void CProfile_D2_05_Common::sendGoToPositionAndAngle(boost::shared_ptr<IMessageH
                "Go to Position and Angle");
 }
 
+void CProfile_D2_05_Common::sendGoToPositionAndAngle(boost::shared_ptr<IMessageHandler> messageHandler,
+                                                     const std::string& senderId,
+                                                     const std::string& targetId,
+                                                     specificHistorizers::EBlindLockingMode mode)
+{
+   enum
+   {
+      kDontChangePosOrAngle = 127
+   };
+
+   boost::dynamic_bitset<> userData(4 * 8);
+   bitset_insert(userData, 1, 7, kDontChangePosOrAngle);
+   bitset_insert(userData, 9, 7, kDontChangePosOrAngle);
+   bitset_insert(userData, 17, 3, 0); // Repositioning : Go directly to POS/ANG
+   bitset_insert(userData, 21, 3, mode); // Locking modes : Do not change
+   bitset_insert(userData, 24, 4, 0); // Channel : Channel 1
+   bitset_insert(userData, 28, 4, kGoToPositionAndAngle);
+
+   sendMessage(messageHandler,
+               senderId,
+               targetId,
+               userData,
+               "Go to Position and Angle (set mode)");
+}
+
 void CProfile_D2_05_Common::sendStop(boost::shared_ptr<IMessageHandler> messageHandler,
                                      const std::string& senderId,
                                      const std::string& targetId)
