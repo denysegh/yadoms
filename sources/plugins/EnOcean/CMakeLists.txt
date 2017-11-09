@@ -63,6 +63,8 @@ set(ENOCEAN_SOURCES
    message/UTE_GigaConceptReversedReceivedMessage.cpp
    message/UTE_ReceivedMessage.h
    message/UTE_ReceivedMessage.cpp
+   message/VLD_SendMessage.h
+   message/VLD_SendMessage.cpp
    
    specificHistorizers/BlindLockingModeHistorizer.h
    specificHistorizers/BlindLockingModeHistorizer.cpp

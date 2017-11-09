@@ -1,10 +1,10 @@
 #include "stdafx.h"
 #include "Profile_D2_05_Common.h"
-#include "../../message/ResponseReceivedMessage.h"
 #include "../bitsetHelpers.hpp"
 #include "../../message/RadioErp1SendMessage.h"
 #include <shared/Log.h>
 #include "Profile_D2_01_Common.h"
+#include "message/VLD_SendMessage.h"
 
 
 void CProfile_D2_05_Common::sendGoToPositionAndAngle(boost::shared_ptr<IMessageHandler> messageHandler,
@@ -44,11 +44,11 @@ void CProfile_D2_05_Common::sendGoToPositionAndAngle(boost::shared_ptr<IMessageH
    bitset_insert(userData, 24, 4, 0); // Channel : Channel 1
    bitset_insert(userData, 28, 4, kGoToPositionAndAngle);
 
-   sendMessage(messageHandler,
-               senderId,
-               targetId,
-               userData,
-               "Go to Position and Angle");
+   message::CVLD_message::send(messageHandler,
+                               senderId,
+                               targetId,
+                               userData,
+                               "Go to Position and Angle");
 }
 
 void CProfile_D2_05_Common::sendGoToPositionAndAngle(boost::shared_ptr<IMessageHandler> messageHandler,
@@ -69,11 +69,11 @@ void CProfile_D2_05_Common::sendGoToPositionAndAngle(boost::shared_ptr<IMessageH
    bitset_insert(userData, 24, 4, 0); // Channel : Channel 1
    bitset_insert(userData, 28, 4, kGoToPositionAndAngle);
 
-   sendMessage(messageHandler,
-               senderId,
-               targetId,
-               userData,
-               "Go to Position and Angle (set mode)");
+   message::CVLD_message::send(messageHandler,
+                               senderId,
+                               targetId,
+                               userData,
+                               "Go to Position and Angle (set mode)");
 }
 
 void CProfile_D2_05_Common::sendStop(boost::shared_ptr<IMessageHandler> messageHandler,
@@ -84,11 +84,11 @@ void CProfile_D2_05_Common::sendStop(boost::shared_ptr<IMessageHandler> messageH
    bitset_insert(userData, 0, 4, 0); // Channel : Channel 1
    bitset_insert(userData, 4, 4, kStop);
 
-   sendMessage(messageHandler,
-               senderId,
-               targetId,
-               userData,
-               "Stop");
+   message::CVLD_message::send(messageHandler,
+                               senderId,
+                               targetId,
+                               userData,
+                               "Stop");
 }
 
 void CProfile_D2_05_Common::sendQueryPositionAndAngle(boost::shared_ptr<IMessageHandler> messageHandler,
@@ -99,11 +99,11 @@ void CProfile_D2_05_Common::sendQueryPositionAndAngle(boost::shared_ptr<IMessage
    bitset_insert(userData, 0, 4, 0); // Channel : Channel 1
    bitset_insert(userData, 4, 4, kQueryPositionAndAngle);
 
-   sendMessage(messageHandler,
-               senderId,
-               targetId,
-               userData,
-               "Query Position and Angle");
+   message::CVLD_message::send(messageHandler,
+                               senderId,
+                               targetId,
+                               userData,
+                               "Query Position and Angle");
 }
 
 std::vector<boost::shared_ptr<const yApi::historization::IHistorizable>> CProfile_D2_05_Common::extractReplyPositionAndAngle(unsigned char rorg,
@@ -211,40 +211,9 @@ void CProfile_D2_05_Common::sendSetParameters(boost::shared_ptr<IMessageHandler>
    bitset_insert(userData, 32, 4, 0); // Channel : Channel 1
    bitset_insert(userData, 36, 4, kSetParameters);
 
-   sendMessage(messageHandler,
-               senderId,
-               targetId,
-               userData,
-               "Set Parameters");
-}
-
-void CProfile_D2_05_Common::sendMessage(boost::shared_ptr<IMessageHandler> messageHandler,
-                                        const std::string& senderId,
-                                        const std::string& targetId,
-                                        const boost::dynamic_bitset<>& userData,
-                                        const std::string& commandName)
-{
-   message::CRadioErp1SendMessage command(CRorgs::kVLD_Telegram,
-                                          senderId,
-                                          targetId,
-                                          0);
-
-   command.userData(bitset_to_bytes(userData));
-
-   boost::shared_ptr<const message::CEsp3ReceivedPacket> answer;
-   if (!messageHandler->send(command,
-                             [](boost::shared_ptr<const message::CEsp3ReceivedPacket> esp3Packet)
-                          {
-                             return esp3Packet->header().packetType() == message::RESPONSE;
-                          },
-                             [&](boost::shared_ptr<const message::CEsp3ReceivedPacket> esp3Packet)
-                          {
-                             answer = esp3Packet;
-                          }))
-   YADOMS_LOG(error) << "Fail to send message to " << targetId << " : no answer to \"" << commandName << "\"";
-
-   auto response = boost::make_shared<message::CResponseReceivedMessage>(answer);
-
-   if (response->returnCode() != message::CResponseReceivedMessage::RET_OK)
-   YADOMS_LOG(error) << "Fail to send message to " << targetId << " : \"" << commandName << "\" returns " << response->returnCode();
+   message::CVLD_message::send(messageHandler,
+                               senderId,
+                               targetId,
+                               userData,
+                               "Set Parameters");
 }

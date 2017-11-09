@@ -187,12 +187,6 @@ public:
                                                                double delayRadioOffTimerSeconds,
                                                                bool switchingStateToggle);
 
-   static void sendMessage(boost::shared_ptr<IMessageHandler> messageHandler,
-                           const std::string& senderId,
-                           const std::string& targetId,
-                           const boost::dynamic_bitset<>& userData,
-                           const std::string& commandName);
-
    static Poco::Int64 extractEnergyWh(E_D2_01_MeasurementUnit unit,
                                       unsigned int rawValue);
 

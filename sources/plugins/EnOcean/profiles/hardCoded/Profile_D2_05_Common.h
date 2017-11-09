@@ -55,11 +55,4 @@ public:
                                  unsigned int measuredDurationOfVerticalRunMs,
                                  unsigned int measuredDurationOfRotationMs,
                                  unsigned int alarmActionValue);
-
-
-   static void sendMessage(boost::shared_ptr<IMessageHandler> messageHandler, //TODO factoriser avec Profile_D2_01_Common.h ?
-                           const std::string& senderId,
-                           const std::string& targetId,
-                           const boost::dynamic_bitset<>& userData,
-                           const std::string& commandName);
 };

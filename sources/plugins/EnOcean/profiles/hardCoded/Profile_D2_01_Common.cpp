@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include "Profile_D2_01_Common.h"
-#include "../../message/ResponseReceivedMessage.h"
 #include "../bitsetHelpers.hpp"
 #include "../../message/RadioErp1SendMessage.h"
 #include <shared/Log.h>
+#include "message/VLD_SendMessage.h"
 
 DECLARE_ENUM_IMPLEMENTATION_NESTED(CProfile_D2_01_Common::EDefaultState, EDefaultState,
    ((off))
@@ -30,11 +30,11 @@ void CProfile_D2_01_Common::sendActuatorSetOutputCommandSwitching(boost::shared_
    bitset_insert(userData, 11, 5, outputChannel);
    bitset_insert(userData, 17, 7, state ? 100 : 0);
 
-   sendMessage(messageHandler,
-               senderId,
-               targetId,
-               userData,
-               "Actuator Set Output");
+   message::CVLD_message::send(messageHandler,
+                               senderId,
+                               targetId,
+                               userData,
+                               "Actuator Set Output");
 }
 
 void CProfile_D2_01_Common::sendActuatorSetOutputCommandDimming(boost::shared_ptr<IMessageHandler> messageHandler,
@@ -71,11 +71,11 @@ void CProfile_D2_01_Common::sendActuatorSetOutputCommandDimming(boost::shared_pt
    bitset_insert(userData, 11, 5, outputChannel);
    bitset_insert(userData, 17, 7, dimValue);
 
-   sendMessage(messageHandler,
-               senderId,
-               targetId,
-               userData,
-               "Actuator Set Output");
+   message::CVLD_message::send(messageHandler,
+                               senderId,
+                               targetId,
+                               userData,
+                               "Actuator Set Output");
 }
 
 void CProfile_D2_01_Common::sendActuatorSetLocalCommand(boost::shared_ptr<IMessageHandler> messageHandler,
@@ -109,11 +109,11 @@ void CProfile_D2_01_Common::sendActuatorSetLocalCommand(boost::shared_ptr<IMessa
    bitset_insert(data, 26, 2, defaultState);
    bitset_insert(data, 28, 4, static_cast<unsigned int>(lround(dimTimer1 / 0.5)));
 
-   sendMessage(messageHandler,
-               senderId,
-               targetId,
-               data,
-               "Actuator Set Local");
+   message::CVLD_message::send(messageHandler,
+                               senderId,
+                               targetId,
+                               data,
+                               "Actuator Set Local");
 }
 
 void CProfile_D2_01_Common::sendActuatorStatusQuery(boost::shared_ptr<IMessageHandler> messageHandler,
@@ -130,11 +130,11 @@ void CProfile_D2_01_Common::sendActuatorStatusQuery(boost::shared_ptr<IMessageHa
    bitset_insert(data, 4, 4, kActuatorStatusQuery);
    bitset_insert(data, 11, 5, outputChannel);
 
-   sendMessage(messageHandler,
-               senderId,
-               targetId,
-               data,
-               "Actuator Status Query");
+   message::CVLD_message::send(messageHandler,
+                               senderId,
+                               targetId,
+                               data,
+                               "Actuator Status Query");
 }
 
 
@@ -169,7 +169,7 @@ std::vector<boost::shared_ptr<const yApi::historization::IHistorizable>> CProfil
    // Sometimes ioChannel is not well set by device (ex NODON ASP-2-1-00 set ioChannel to 1 instead of 0),
    // so ignore ioChannel value (juste verify that is not input channel)
    if (ioChannel == kInputChannel)
-      YADOMS_LOG(warning) << "ActuatorStatusResponse : received unsupported ioChannel value " << ioChannel;
+   YADOMS_LOG(warning) << "ActuatorStatusResponse : received unsupported ioChannel value " << ioChannel;
    else
    {
       if (!!channel1)
@@ -185,7 +185,7 @@ std::vector<boost::shared_ptr<const yApi::historization::IHistorizable>> CProfil
       else
       {
          YADOMS_LOG(warning) << "ActuatorStatusResponse : received unsupported ioChannel value " << ioChannel;
-      }      
+      }
    }
 
    if (!!overCurrent)
@@ -303,11 +303,11 @@ void CProfile_D2_01_Common::sendActuatorSetMeasurementCommand(boost::shared_ptr<
    bitset_insert(data, 32, 8, static_cast<unsigned char>(maxEnergyMeasureRefreshTime / 10.0));
    bitset_insert(data, 40, 8, static_cast<unsigned char>(minEnergyMeasureRefreshTime));
 
-   sendMessage(messageHandler,
-               senderId,
-               targetId,
-               data,
-               "Actuator Set Measurement");
+   message::CVLD_message::send(messageHandler,
+                               senderId,
+                               targetId,
+                               data,
+                               "Actuator Set Measurement");
 }
 
 void CProfile_D2_01_Common::sendActuatorMeasurementQuery(boost::shared_ptr<IMessageHandler> messageHandler,
@@ -321,11 +321,11 @@ void CProfile_D2_01_Common::sendActuatorMeasurementQuery(boost::shared_ptr<IMess
    bitset_insert(userData, 10, 1, queryType);
    bitset_insert(userData, 11, 5, outputChannel);
 
-   sendMessage(messageHandler,
-               senderId,
-               targetId,
-               userData,
-               "Actuator Measurement Query");
+   message::CVLD_message::send(messageHandler,
+                               senderId,
+                               targetId,
+                               userData,
+                               "Actuator Measurement Query");
 }
 
 const boost::shared_ptr<yApi::historization::CEnergy> CProfile_D2_01_Common::noInputEnergy = boost::shared_ptr<yApi::historization::CEnergy>();
@@ -420,11 +420,11 @@ void CProfile_D2_01_Common::sendActuatorSetPilotWireModeCommand(boost::shared_pt
    }
    bitset_insert(userData, 13, 3, pilotWireMode);
 
-   sendMessage(messageHandler,
-               senderId,
-               targetId,
-               userData,
-               "Actuator Set Pilot Wire Mode");
+   message::CVLD_message::send(messageHandler,
+                               senderId,
+                               targetId,
+                               userData,
+                               "Actuator Set Pilot Wire Mode");
 }
 
 void CProfile_D2_01_Common::sendActuatorPilotWireModeQuery(boost::shared_ptr<IMessageHandler> messageHandler,
@@ -435,11 +435,11 @@ void CProfile_D2_01_Common::sendActuatorPilotWireModeQuery(boost::shared_ptr<IMe
 
    bitset_insert(userData, 4, 4, kActuatorPilotWireModeQuery);
 
-   sendMessage(messageHandler,
-               senderId,
-               targetId,
-               userData,
-               "Actuator Pilot Wire Mode Query");
+   message::CVLD_message::send(messageHandler,
+                               senderId,
+                               targetId,
+                               userData,
+                               "Actuator Pilot Wire Mode Query");
 }
 
 std::vector<boost::shared_ptr<const yApi::historization::IHistorizable>> CProfile_D2_01_Common::extractActuatorPilotWireModeResponse(unsigned char rorg,
@@ -509,42 +509,11 @@ void CProfile_D2_01_Common::sendActuatorSetExternalInterfaceSettingsCommand(boos
    bitset_insert(data, 48, 2, connectedSwitchsType);
    bitset_insert(data, 50, !switchingStateToggle);
 
-   sendMessage(messageHandler,
-               senderId,
-               targetId,
-               data,
-               "Actuator Set External Interface Settings");
-}
-
-void CProfile_D2_01_Common::sendMessage(boost::shared_ptr<IMessageHandler> messageHandler,
-                                        const std::string& senderId,
-                                        const std::string& targetId,
-                                        const boost::dynamic_bitset<>& userData,
-                                        const std::string& commandName)
-{
-   message::CRadioErp1SendMessage command(CRorgs::kVLD_Telegram,
-                                          senderId,
-                                          targetId,
-                                          0);
-
-   command.userData(bitset_to_bytes(userData));
-
-   boost::shared_ptr<const message::CEsp3ReceivedPacket> answer;
-   if (!messageHandler->send(command,
-                             [](boost::shared_ptr<const message::CEsp3ReceivedPacket> esp3Packet)
-                          {
-                             return esp3Packet->header().packetType() == message::RESPONSE;
-                          },
-                             [&](boost::shared_ptr<const message::CEsp3ReceivedPacket> esp3Packet)
-                          {
-                             answer = esp3Packet;
-                          }))
-   YADOMS_LOG(error) << "Fail to send message to " << targetId << " : no answer to \"" << commandName << "\"";
-
-   auto response = boost::make_shared<message::CResponseReceivedMessage>(answer);
-
-   if (response->returnCode() != message::CResponseReceivedMessage::RET_OK)
-   YADOMS_LOG(error) << "Fail to send message to " << targetId << " : \"" << commandName << "\" returns " << response->returnCode();
+   message::CVLD_message::send(messageHandler,
+                               senderId,
+                               targetId,
+                               data,
+                               "Actuator Set External Interface Settings");
 }
 
 

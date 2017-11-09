@@ -35,6 +35,5 @@ private:
    boost::shared_ptr<yApi::historization::CCurtain> m_state;
    boost::shared_ptr<yApi::historization::CDimmable> m_value;
    boost::shared_ptr<specificHistorizers::CBlindLockingModeHistorizer> m_mode;
-   //TODO ajouter un autre KW pour piloter 0..100% ?
    std::vector<boost::shared_ptr<const yApi::historization::IHistorizable>> m_historizers;
 };
