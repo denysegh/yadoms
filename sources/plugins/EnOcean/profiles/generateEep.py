@@ -18,6 +18,7 @@ import copy
 
 import cppClass
 import cppHelper
+import cppCapacity
 import xmlHelper
 import profileHelper
 import util
@@ -51,7 +52,6 @@ if xmlRootNode.tag != "eep":
 xmlProfileNode = xmlRootNode.find("profile")
 
 util.info("Hard-coded profiles are : " + str(hardCodedProfiles.getProfilesHardCoded()))
-
 
 
 # CRorgs : Main Rorgs class, listing Rorg messages
@@ -236,10 +236,11 @@ for xmlRorgNode in xmlProfileNode.findall("rorg"):
             historizerEnumName = "E" + cppHelper.toCppName(xmlTypeNode.find("title").text) + "_" + cppHelper.toCppName(xmlDataFieldNode.find("data").text) + "_" + cppHelper.toCppName(xmlDataFieldNode.find("data").text)
             cppHistorizerClass = cppClass.CppClass(cppHistorizerClassName, createDefaultCtor=False)
             cppHistorizerClass.inheritFrom("yApi::historization::CSingleHistorizableData<" + historizerEnumName + ">", cppClass.PUBLIC)
-            //TOFIX : utiliser DECLARE_CAPACITY
+            cppHistorizerCapacity = cppCapacity.capacityType(historizerEnumName)
             cppHistorizerClass.addConstructor(cppClass.CppClassConstructor("const std::string& keywordName", \
-               "CSingleHistorizableData<" + historizerEnumName + ">(keywordName, yApi::CStandardCapacity(\"" + historizerEnumName + "\", yApi::CStandardUnits::NoUnit(), yApi::EKeywordDataType::kNoData), yApi::EKeywordAccessMode::kGet)"))
-            cppHistorizerClass.addDependency(cppClass.CppExtendedEnumType(historizerEnumName, enumValues))
+               "CSingleHistorizableData<" + historizerEnumName + ">(keywordName, " + cppHistorizerCapacity.instance() + ", yApi::EKeywordAccessMode::kGet)"))
+            cppHistorizerCapacity.addDependency(cppClass.CppExtendedEnumType(historizerEnumName, enumValues))
+            cppHistorizerClass.addDependency(cppHistorizerCapacity)
             return cppHistorizerClass
 
 
