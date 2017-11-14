@@ -61,11 +61,26 @@ void CProfile_D2_05_Common::sendGoToPositionAndAngle(boost::shared_ptr<IMessageH
       kDontChangePosOrAngle = 127
    };
 
+
+   ELockingMode modeValue;
+   switch (mode)
+   {
+   case specificHistorizers::EBlindLockingMode::kBlockageValue:
+      modeValue = kBlockage;
+      break;
+   case specificHistorizers::EBlindLockingMode::kAlarmValue:
+      modeValue = kAlarm;
+      break;
+   default:
+      modeValue = kDeblockage;
+      break;
+   }
+
    boost::dynamic_bitset<> userData(4 * 8);
    bitset_insert(userData, 1, 7, kDontChangePosOrAngle);
    bitset_insert(userData, 9, 7, kDontChangePosOrAngle);
    bitset_insert(userData, 17, 3, 0); // Repositioning : Go directly to POS/ANG
-   bitset_insert(userData, 21, 3, mode); // Locking modes : Do not change
+   bitset_insert(userData, 21, 3, modeValue); // Locking modes : Do not change
    bitset_insert(userData, 24, 4, 0); // Channel : Channel 1
    bitset_insert(userData, 28, 4, kGoToPositionAndAngle);
 
@@ -135,45 +150,34 @@ std::vector<boost::shared_ptr<const yApi::historization::IHistorizable>> CProfil
       kPosOrAngleUnknown = 127
    };
 
+   int refValue = kPosOrAngleUnknown;
    if (posValue == kPosOrAngleUnknown)
    {
-      if (angValue == kPosOrAngleUnknown)
-         return std::vector<boost::shared_ptr<const yApi::historization::IHistorizable>>();
-
-      if (!!value)
-      {
-         value->set(angValue);
-         historizers.push_back(value);
-      }
-      if (!!state)
-      {
-         state->set(angValue > 49 ? yApi::historization::ECurtainCommand::kOpen : yApi::historization::ECurtainCommand::kClose);
-         historizers.push_back(value);
-      }
+      if (angValue != kPosOrAngleUnknown)
+         refValue = angValue;
    }
    else
    {
+      refValue = posValue;
+   }
+
+   if (refValue != kPosOrAngleUnknown)
+   {
       if (!!value)
       {
-         value->set(posValue);
+         value->set(refValue);
          historizers.push_back(value);
       }
       if (!!state)
       {
-         state->set(posValue > 49 ? yApi::historization::ECurtainCommand::kOpen : yApi::historization::ECurtainCommand::kClose);
-         historizers.push_back(value);
+         state->set(refValue > 49 ? yApi::historization::ECurtainCommand::kOpen : yApi::historization::ECurtainCommand::kClose);
+         historizers.push_back(state);
       }
    }
 
+
    if (!!mode)
    {
-      enum ELockingMode
-      {
-         kNormal = 0,
-         kBlockage = 1,
-         kAlarm = 2
-      };
-
       switch (lockingMode)
       {
       case kNormal:

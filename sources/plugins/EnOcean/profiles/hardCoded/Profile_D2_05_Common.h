@@ -17,6 +17,14 @@ public:
       kSetParameters = 5
    };
 
+   enum ELockingMode
+   {
+      kNormal = 0,
+      kBlockage = 1,
+      kAlarm = 2,
+      kDeblockage = 7
+   };
+
    // CMD 1 - Go to Position and Angle
    static void sendGoToPositionAndAngle(boost::shared_ptr<IMessageHandler> messageHandler,
                                         const std::string& senderId,
