@@ -583,11 +583,21 @@ void CEnOcean::processRadioErp1(boost::shared_ptr<const message::CEsp3ReceivedPa
 
       auto device = m_devices[deviceId];
 
-      auto keywordsToHistorize = device->states(static_cast<unsigned char>(erp1Message.rorg()),
-                                                erp1UserData,
-                                                erp1Status,
-                                                m_senderId,
-                                                m_messageHandler);
+      std::vector<boost::shared_ptr<const yApi::historization::IHistorizable>> keywordsToHistorize;
+      try
+      {
+         keywordsToHistorize = device->states(static_cast<unsigned char>(erp1Message.rorg()),
+                                              erp1UserData,
+                                              erp1Status,
+                                              m_senderId,
+                                              m_messageHandler);
+      }
+      catch (std::exception& e)
+      {
+         YADOMS_LOG(error) << "Unable to read state for id#" << deviceId << ", " << e.what();
+         return;
+      }
+
       if (keywordsToHistorize.empty())
       {
          YADOMS_LOG(information) << "Received message for id#" << deviceId << ", but nothing to historize";
