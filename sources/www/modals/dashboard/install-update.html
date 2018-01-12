@@ -772,7 +772,7 @@
 
             //we manage actions buttons
             var uninstallAllowed = false;
-            var installUpdateAllowed = false;
+            var updateAllowed = false;
             var canChooseVersion = false;
 
             var availableVersions = [];
@@ -789,8 +789,6 @@
                 });
             }
 
-  
-             
 
             if (!isNullOrUndefined(item.package.version)) {
                 //the plugin is already installed so the button is used to update
@@ -804,22 +802,25 @@
             }
 
             if (availableVersions.length > 0) {
-               //we order the list
-               availableVersions.sort(function (a, b) {
-                  return Version.compare(b.version, a.version); //invert versions
-               });                      
-               
-               //update the last available version
-               $line.find("em.latest-version").text(availableVersions[0].version.toString());
-               $line.find("ul.latest-installable-version").text(availableVersions[0].version.toString());
-   
-                if (availableVersions.length > 1) {
-                    //there is different versions visible
-                    canChooseVersion = true;
-                }
+                //we order the list
+                availableVersions.sort(function (a, b) {
+                   return Version.compare(b.version, a.version); //invert versions
+                });
 
-                //the main install button is allowed only if latest version and current version are different
-                installUpdateAllowed = (Version.compare(item.package.version, availableVersions[0].version) !== 0);
+                // Update the last available version (if newer than installed version)
+                if (Version.compare(availableVersions[0].version, item.package.version) > 0) {
+                   $line.find("em.latest-version").text(availableVersions[0].version.toString());
+                   $line.find("ul.latest-installable-version").text(availableVersions[0].version.toString());
+                   updateAllowed = true;
+                }
+                
+                // Can install every different version than actualy installed
+                $.each(availableVersions, function (index, availableVersion) {
+                    if (Version.compare(availableVersion.version, item.package.version) != 0) {
+                        canChooseVersion = true;
+                        return false;
+                    }
+                });
 
                 //we create a combo that have all available versions for install or update
                 var $cbVersion = $line.find("ul.versions");
@@ -843,7 +844,7 @@
                 });
             }
             else {
-                //there is no interesting new version
+                //there is no interesting version
                 $line.find("button.btn-expand").addClass("disabled");
             }
 
@@ -858,15 +859,16 @@
                 $line.find("button.btn-uninstall").addClass("disabled");
                 $line.find("button.btn-uninstall").unbind('click');
             }
+            
+            //if the user can choose version we enable the list
+            if (canChooseVersion)
+                $line.find("div.btn-install button.btn-expand").removeClass("disabled");
+            else
+                $line.find("div.btn-install button.btn-expand").addClass("disabled");
 
-            if (installUpdateAllowed) {
+            if (updateAllowed) {
                 $line.find("div.btn-install button.main-btn").removeClass("disabled");
                 $line.find("span.update-available-label").removeClass("hidden");
-                //if the user can choose version we enable the list
-                if (canChooseVersion)
-                    $line.find("div.btn-install button.btn-expand").removeClass("disabled");
-                else
-                    $line.find("div.btn-install button.btn-expand").addClass("disabled");
 
                 //we manage click events
                 if (!isNullOrUndefined(item.package.version)) {
@@ -884,7 +886,6 @@
             }
             else {
                 $line.find("div.btn-install button.main-btn").addClass("disabled");
-                $line.find("div.btn-install button.btn-expand").addClass("disabled");
                 $line.find("span.update-available-label").addClass("hidden");
             }
         }

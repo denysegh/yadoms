@@ -62,20 +62,11 @@ WidgetPackageManager.getAll = function () {
             });
          });
          
-        
-        $.whenAll(deferredArray)
-         .done(function() {
-            //
-            $.each(newWidgetPackages, function(index, newPackage) {
-               if(WidgetPackageManager.packageList[newPackage.type]) {
-                  //if already exists and newer
-                  if(newPackage.version != WidgetPackageManager.packageList[newPackage.type].version) {
-                     WidgetPackageManager.packageList[newPackage.type] = newPackage;
-                  } else {
-                     //already exist, same version, so do nothing
-                  }
-               } else {
-                  //if not exists
+         //
+         $.each(newWidgetPackages, function(index, newPackage) {
+            if(WidgetPackageManager.packageList[newPackage.type]) {
+               //if already exists and newer
+               if(newPackage.package.version != WidgetPackageManager.packageList[newPackage.type].package.version) {
                   WidgetPackageManager.packageList[newPackage.type] = newPackage;
                }
             });

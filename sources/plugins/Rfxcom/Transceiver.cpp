@@ -55,8 +55,8 @@
 // RFXCOM implementation
 // =======================================================================
 // This RFXCom support was developped for :
-// - Sepcifications "RFXtrx SDK.pdf" : Version 9.14 Jan 12, 2017
-// - RFXtrx.h : version 9.13
+// - Sepcifications "RFXtrx SDK.pdf" : Version 9.17 Oct ??, 2017
+// - RFXtrx.h : version 9.17
 // =======================================================================
 //
 
@@ -146,8 +146,7 @@ shared::communication::CByteBuffer CTransceiver::buildSetModeCmd(unsigned char f
    if (configuration.isLWRFenabled()) request.ICMND.msg4 |= msg4_AD;
    if (configuration.isHIDEKIenabled()) request.ICMND.msg4 |= msg4_HID;
    if (configuration.isLACROSSEenabled()) request.ICMND.msg4 |= msg4_LCROS;
-   if (configuration.isFS20enabled()) request.ICMND.msg4 |= msg4_FS20;
-   if (configuration.isPROGUARDenabled()) request.ICMND.msg4 |= msg4_PROGUARD;
+   if (configuration.isLEGRANDenabled()) request.ICMND.msg4 |= msg4_LEGRAND;
    if (configuration.isBLINDST0enabled()) request.ICMND.msg4 |= msg4_BLINDST0;
    if (configuration.isBLINDST1enabled()) request.ICMND.msg4 |= msg4_BLINDST1;
    request.ICMND.msg5 = 0;
@@ -195,7 +194,7 @@ boost::shared_ptr<std::queue<shared::communication::CByteBuffer>> CTransceiver::
       case pTypeLighting1:
          return rfxcomMessages::CLighting1(api, command->getBody(), deviceDetails).encode(m_seqNumberProvider);
       case pTypeLighting2:
-         return rfxcomMessages::CLighting2(api, command->getBody(), deviceDetails).encode(m_seqNumberProvider);
+         return rfxcomMessages::CLighting2(api, command, deviceDetails).encode(m_seqNumberProvider);
       case pTypeLighting3:
          return rfxcomMessages::CLighting3(api, command->getBody(), deviceDetails).encode(m_seqNumberProvider);
       case pTypeLighting4:
@@ -245,6 +244,12 @@ boost::shared_ptr<std::queue<shared::communication::CByteBuffer>> CTransceiver::
    {
       throw shared::exception::CInvalidParameter((boost::format("Invalid command \"%1%\" : %2%") % command->getBody() % e.what()).str());
    }
+}
+
+boost::shared_ptr<std::queue<shared::communication::CByteBuffer>> CTransceiver::buildRfyProgramMessage(const shared::communication::CByteBuffer& lastRequest) const
+{
+   return rfxcomMessages::CRfy::encodeProgramMessage(m_seqNumberProvider,
+                                                     lastRequest);
 }
 
 boost::shared_ptr<rfxcomMessages::IRfxcomMessage> CTransceiver::decodeRfxcomMessage(boost::shared_ptr<yApi::IYPluginApi> api,
@@ -344,9 +349,9 @@ boost::shared_ptr<rfxcomMessages::IRfxcomMessage> CTransceiver::decodeRfxcomMess
          break;
       default:
          {
-            YADOMS_LOG(error) << "Invalid RfxCom message received, unknown packet type " << std::setfill('0')
+            YADOMS_LOG(warning) << "Invalid RfxCom message received, unknown packet type " << std::setfill('0')
                << std::setw(sizeof(unsigned char) * 2) << std::hex << static_cast<int>(buf->RXRESPONSE.packettype);
-            break;
+            return boost::shared_ptr<rfxcomMessages::IRfxcomMessage>();
          }
       }
 
@@ -376,7 +381,7 @@ std::string CTransceiver::createDeviceManually(boost::shared_ptr<yApi::IYPluginA
       // Lighting1
       if (deviceType == "x10")
          msg = boost::make_shared<rfxcomMessages::CLighting1>(api, sTypeX10, data.getDeviceName(), data.getConfiguration());
-      else if (deviceType == "arc")
+      else if (deviceType == "ARC")
          msg = boost::make_shared<rfxcomMessages::CLighting1>(api, sTypeARC, data.getDeviceName(), data.getConfiguration());
       else if (deviceType == "ab400d")
          msg = boost::make_shared<rfxcomMessages::CLighting1>(api, sTypeAB400D, data.getDeviceName(), data.getConfiguration());
@@ -398,7 +403,7 @@ std::string CTransceiver::createDeviceManually(boost::shared_ptr<yApi::IYPluginA
          msg = boost::make_shared<rfxcomMessages::CLighting1>(api, sTypeGDR2, data.getDeviceName(), data.getConfiguration());
 
       // Lighting2
-      else if (deviceType == "ac")
+      else if (deviceType == "AC")
          msg = boost::make_shared<rfxcomMessages::CLighting2>(api, sTypeX10, data.getDeviceName(), data.getConfiguration());
       else if (deviceType == "homeEasyEU")
          msg = boost::make_shared<rfxcomMessages::CLighting2>(api, sTypeARC, data.getDeviceName(), data.getConfiguration());
@@ -597,10 +602,10 @@ std::string CTransceiver::createDeviceManually(boost::shared_ptr<yApi::IYPluginA
 void CTransceiver::logMessage(boost::shared_ptr<yApi::IYPluginApi> api,
                               const boost::shared_ptr<rfxcomMessages::IRfxcomMessage>& message)
 {
-   if (!message->getDeviceName().empty())
+   if (!!message && !message->getDeviceName().empty())
    {
       YADOMS_LOG(information) << "Receive data for " << message->getDeviceName();
       for (const auto& keyword : message->keywords())
-         YADOMS_LOG(information) << "  - " << keyword->getKeyword() << " : " << keyword->formatValue();
+      YADOMS_LOG(information) << "  - " << keyword->getKeyword() << " : " << keyword->formatValue();
    }
 }

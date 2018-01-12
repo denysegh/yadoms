@@ -85,8 +85,6 @@ private:
    boost::shared_ptr<yApi::IYPluginApi> m_api;
    std::string m_deviceName;
 
-   bool m_isdeveloperMode;
-
    bool m_teleinfoEnableInCounter;
 
    bool m_deviceCreated;
@@ -120,4 +118,5 @@ private:
    static const std::string m_tag_IINST3;
    static const std::string m_tag_PAPP;
    static const std::string m_tag_DEMAIN;
+   static const std::string m_tag_PEJP;
 };

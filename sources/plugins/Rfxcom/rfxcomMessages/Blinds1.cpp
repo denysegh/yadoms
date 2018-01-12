@@ -24,7 +24,10 @@ namespace rfxcomMessages
       m_id = deviceDetails.get<unsigned int>("id");
       m_unitCode = deviceDetails.get<unsigned char>("unitCode");
 
-      Init(api);
+      // Build device description
+      buildDeviceModel();
+      buildDeviceName();
+      m_deviceDetails = deviceDetails;
    }
 
    CBlinds1::CBlinds1(boost::shared_ptr<yApi::IYPluginApi> api,
@@ -64,7 +67,7 @@ namespace rfxcomMessages
       }
 
       m_id = manuallyDeviceCreationConfiguration.get<unsigned int>("id");
-      m_unitCode = manuallyDeviceCreationConfiguration.get<unsigned char>("unitCode", 0);
+      m_unitCode = manuallyDeviceCreationConfiguration.getWithDefault<unsigned char>("unitCode", 0);
 
       buildDeviceDetails();
       api->updateDeviceDetails(m_deviceName, m_deviceDetails);
@@ -120,12 +123,50 @@ namespace rfxcomMessages
          throw shared::exception::COutOfRange("Encode : subType is not supported");
       }
 
-      m_unitCode = rbuf.BLINDS1.unitcode;
+      switch (m_subType)
+      {
+      case sTypeBlindsT3:
+      case sTypeBlindsT8:
+      case sTypeBlindsT12:
+         m_unitCode = rbuf.BLINDS1.unitcode + 1;
+         break;
+      case sTypeBlindsT0:
+      case sTypeBlindsT1:
+      case sTypeBlindsT2:
+      case sTypeBlindsT4:
+      case sTypeBlindsT5:
+      case sTypeBlindsT6:
+      case sTypeBlindsT7:
+      case sTypeBlindsT9:
+      case sTypeBlindsT10:
+      case sTypeBlindsT11:
+      case sTypeBlindsT13:
+         m_unitCode = rbuf.BLINDS1.unitcode;
+         break;
+      default:
+         throw shared::exception::COutOfRange("Manually device creation : subType is not supported");
+      }
+
       m_state->set(fromProtocolState(rbuf.BLINDS1.cmnd));
       m_batteryLevel->set(NormalizeBatteryLevel(rbuf.BLINDS1.filler)); // filler is specified as battery level in RFXtrx SDF.pdf
       m_signalPower->set(NormalizesignalPowerLevel(rbuf.BLINDS1.rssi));
 
-      Init(api);
+      // Build device description
+      buildDeviceModel();
+      buildDeviceName();
+      buildDeviceDetails();
+
+      // Create device and keywords if needed
+      if (!api->deviceExists(m_deviceName))
+      {
+         api->declareDevice(m_deviceName,
+                            m_deviceModel,
+                            m_deviceModel,
+                            m_keywords,
+                            m_deviceDetails);
+         YADOMS_LOG(information) << "New device : " << m_deviceName << " (" << m_deviceModel << ")";
+         m_deviceDetails.printToLog(YADOMS_LOG(information));
+      }
    }
 
    CBlinds1::~CBlinds1()
@@ -141,24 +182,6 @@ namespace rfxcomMessages
          m_deviceDetails.set("id", m_id);
          m_deviceDetails.set("unitCode", m_unitCode);
       }
-   }
-
-   void CBlinds1::Init(boost::shared_ptr<yApi::IYPluginApi> api)
-   {
-      // Build device description
-      buildDeviceModel();
-      buildDeviceName();
-      buildDeviceDetails();
-
-      // Create device and keywords if needed
-      if (!api->deviceExists(m_deviceName))
-         api->declareDevice(m_deviceName,
-                            m_deviceModel,
-                            m_deviceModel,
-                            m_keywords,
-                            m_deviceDetails);
-      YADOMS_LOG(information) << "New device : " << m_deviceName << " (" << m_deviceModel << ")";
-      m_deviceDetails.printToLog(YADOMS_LOG(information));
    }
 
    boost::shared_ptr<std::queue<shared::communication::CByteBuffer>> CBlinds1::encode(boost::shared_ptr<ISequenceNumber> seqNumberProvider) const
@@ -215,7 +238,30 @@ namespace rfxcomMessages
          throw shared::exception::COutOfRange("Encode : subType is not supported");
       }
 
-      buffer.BLINDS1.unitcode = m_unitCode;
+      switch (m_subType)
+      {
+      case sTypeBlindsT3:
+      case sTypeBlindsT8:
+      case sTypeBlindsT12:
+         buffer.BLINDS1.unitcode = m_unitCode - 1;
+         break;
+      case sTypeBlindsT0:
+      case sTypeBlindsT1:
+      case sTypeBlindsT2:
+      case sTypeBlindsT4:
+      case sTypeBlindsT5:
+      case sTypeBlindsT6:
+      case sTypeBlindsT7:
+      case sTypeBlindsT9:
+      case sTypeBlindsT10:
+      case sTypeBlindsT11:
+      case sTypeBlindsT13:
+         buffer.BLINDS1.unitcode = m_unitCode;
+         break;
+      default:
+         throw shared::exception::COutOfRange("Manually device creation : subType is not supported");
+      }
+
       buffer.BLINDS1.cmnd = toProtocolState(*m_state);
       buffer.BLINDS1.rssi = 0;
       buffer.BLINDS1.filler = 0;

@@ -59,7 +59,14 @@
       "interrupted": "Task interrupted",
       "crash": "Task crashed",
       "unknownError": "Unknown Task error",
-      "end": "Task end"
+      "end": "Task end",
+      "backup" : {
+         "prepare" : "Preparing backup...",
+         "copyfiles" : "Copying files...",
+         "compress" : "Compressing files...",
+         "clean" : "Clening...",
+         "success" : "Backup succeeded"
+      }
     },
     "database": {
       "backup": {
@@ -88,7 +95,8 @@
     "resetToDefault": "Reset to default",
     "goBack": "Go Back",
     "enabled": "Enabled",
-    "disabled": "Disabled"
+    "disabled": "Disabled",
+    "clear": "Clear"
   },
   "mainPage": {
     "menu": {
@@ -142,12 +150,12 @@
   "modals": {
     "pickup": {
       "add": "Add",
-      "goBack": "Go back",	
+      "goBack": "Go back",
       "descriptionHeader": "Description:",
       "versionHeader": "Version:",
       "authorHeader": "Author:",
-	  "errorDuringGettingPackages": "Error during requesting packages"
-	},
+      "errorDuringGettingPackages": "Error during requesting packages"
+    },
     "add-widget": {
       "title": "Add a new widget",
       "getMore": "Get More widgets",
@@ -205,22 +213,22 @@
       "title": "Add a new device",
       "errorDuringGettingPluginTypes": "Error during requesting plugin types",
       "addManuallyDeviceSection": {
-         "name": "Device type to create",
-         "content": {
-            "attachedToPlugin" : {
-               "name": "Attached to plugin",
-               "description": "Create a device associated to a plugin. Some receiving devices (remote plugs, light or blind command devices...) can't be auto-detected, they must be manually created.",
-               "content" : {
-                  "plugins": {
-                     "name": "Select the plugin"
-                  }
-               }
-            },
-            "virtualDevice" : {
-               "name": "Virtual device",
-               "description": "A virtual device can be used to record data that don't come from a physical device. Example : alarm state, tank level compute based on cosumption (without level sensor), global lights command..."
+        "name": "Device type to create",
+        "content": {
+          "attachedToPlugin": {
+            "name": "Attached to plugin",
+            "description": "Create a device associated to a plugin. Some receiving devices (remote plugs, light or blind command devices...) can't be auto-detected, they must be manually created.",
+            "content": {
+              "plugins": {
+                "name": "Select the plugin"
+              }
             }
-         }
+          },
+          "virtualDevice": {
+            "name": "Virtual device",
+            "description": "A virtual device can be used to record data that don't come from a physical device. Example : alarm state, tank level compute based on cosumption (without level sensor), global lights command..."
+          }
+        }
       }
     },
     "delete-device": {
@@ -295,33 +303,33 @@
         "name": "Model",
         "description": "Virtual device model",
         "regexErrorMessage": "Enter here the virtual device model to easy identify the device"
-    },
+      },
       "schema": {
-         "capacity": {
-            "name": "Data type",
-            "description": "Select the virtual device data type",
-            "content": {
-               "standardCapacity": {
-                  "name": "Standard data type",
-                  "description": "Use of standard data type",
-                  "content": {
-                     "capacity": {
-                        "name": "Data type"
-                     }
-                  }
-               },
-               "customEnumCapacity": {     
-                  "name": "Values list",
-                  "description": "Enumerated data type, containing a custom list of values",
-                  "content": {
-                     "valueList": {
-                        "name": "Values",
-                        "description": "Enter the values, spearated by comma"
-                     }
-                  }
-               }
+        "capacity": {
+          "name": "Data type",
+          "description": "Select the virtual device data type",
+          "content": {
+            "standardCapacity": {
+              "name": "Standard data type",
+              "description": "Use of standard data type",
+              "content": {
+                "capacity": {
+                  "name": "Data type"
+                }
+              }
+            },
+            "customEnumCapacity": {
+              "name": "Values list",
+              "description": "Enumerated data type, containing a custom list of values",
+              "content": {
+                "valueList": {
+                  "name": "Values",
+                  "description": "Enter the values, spearated by comma"
+                }
+              }
             }
-         }
+          }
+        }
       }
     },
     "new-automation-rule": {
@@ -387,7 +395,7 @@
           "startedFrom": "Started from",
           "developerMode": "Developer mode",
           "errorRequestingDatabaseVersion": "Error requesting Database Version",
-          "errorRequestingSystemInformation" : "Error requesting system information",
+          "errorRequestingSystemInformation": "Error requesting system information",
           "type": "Database engine",
           "size": "Database size",
           "version": "Version of database engine",
@@ -395,7 +403,7 @@
           "port": "Port",
           "name": "Database",
           "user": "Database user",
-          "secured": "Secured mode"          
+          "secured": "Secured mode"
         },
         "user-management": {
           "title": "User management"
@@ -407,10 +415,10 @@
               "name": "Default Language",
               "description": "Define the language used by default for every users."
             },
-		      "timezone": {
-				   "description": "Define your Timezone.",
-				   "name": "Timezone"
-			   },	            
+            "timezone": {
+              "description": "Define your Timezone.",
+              "name": "Timezone"
+            },
             "basicAuthentication": {
               "name": "Authentication",
               "description": "Use authentification method to get access to Yadoms."
@@ -436,18 +444,22 @@
               "name": "Date Format String",
               "description": "You can change date format string using moment.js syntax (ie \"LLL\" or \"'MMMM Do YYYY, h:mm:ss a\")"
             },
+            "refreshPage": {
+              "name": "Keep the active page during session",
+              "description": "If you refresh the browser by pressiong F5, Yadoms will automatically load in the precedent active page"
+            },            
             "location": {
               "name": "Location",
               "description": "Enter below coordonates of your city ([Site web latlong](http://www.latlong.net/))"
             },
             "latitude": {
-               "name": "Latitude",
-               "description": ""
+              "name": "Latitude",
+              "description": ""
             },
             "longitude": {
-               "name": "Longitude",
-               "description": ""
-            }            
+              "name": "Longitude",
+              "description": ""
+            }
           },
           "confirmResetToDefault": "This operation will restore all default configuration. Continue ?",
           "configurationSaved": "System configuration successfully saved",
@@ -472,7 +484,7 @@
           "startStop": "Start / Stop the plugin",
           "running": "Running",
           "starting": "Starting...",
-          "waitDebugger" : "Waiting for debugger...",
+          "waitDebugger": "Waiting for debugger...",
           "stopped": "Stopped",
           "error": "Error",
           "packageError": "Invalid plugin",
@@ -513,18 +525,18 @@
               "update": "Last state",
               "actions": "Actions"
             },
-            "nokeywords" : "No associated data"
+            "nokeywords": "No associated data"
           },
           "configure": "Configure the device",
           "delete": "Delete the device",
-		  "restore" : "Restore the device",
+          "restore": "Restore the device",
           "errorGettingDeviceList": "An error has occurred acquiring device list",
           "errorGettingDeviceDetailsList": "An error has occurred acquiring device details list",
           "errorUpdatingKeyword": "An error occurred updating data {{keyword}}",
           "errorDeletingDevice": "An error occurred while removing/restoring {{device}}",
           "errorBlacklistingKeyword": "An error occurred while removing/restoring {{keyword}}",
           "noAcquisition": "No acquisition",
-		  "showBlacklistedDevices" : "Show deleted devices"
+          "showBlacklistedDevices": "Show deleted devices"
         },
         "automation-center": {
           "title": "Automation center",
@@ -547,6 +559,7 @@
           "delete": "Delete the rule",
           "confirmDeletion": "This action will delete the rule {{name}}. Continue anyway ?",
           "log": "View log",
+          "confirmLogDeletion": "This action will delete the __name__ rule log. Continue anyway ?",
           "ruleSuccessfullyCreated": "Rule successfully created",
           "ruleSuccessfullyUpdated": "Rule successfully updated",
           "ruleDeleted": "Rule successfully removed",
@@ -556,10 +569,11 @@
           "ruleDeletionError": "Fail to delete rule {{rule}}.",
           "ruleStopError": "Fail to stop rule {{rule}}.",
           "ruleStartError": "Fail to start rule {{rule}}.",
-		  "pluginListingError": "Fail to list plugins.",
+          "pluginListingError": "Fail to list plugins.",
           "ruleListingError": "Fail to list rules.",
           "ruleInterpreterListingError": "Fail to list rule interpreters.",
           "ruleGetLogError": "Fail to get logs of rule {{rule}}.",
+          "ruleDeleteLogError": "Fail to delete logs of rule __rule__.",
           "editors": {
             "code": {
               "name": "Code"
@@ -612,15 +626,19 @@
         "maintenance": {
           "title": "Maintenance",
           "backup": "Start a database backup",
-          "backuplist" : {
-            "date" : "Date",
-            "size" : "File size",
-            "location" : "Location",
-            "actions" : "Actions",
-            "download" : "Download",
-            "delete" : "Delete",
-            "deleteConfirmTitle" : "Confirm delete",
-            "deleteConfirm" : "Delete the last backup ?"
+          "deleteAll" : "Delete all backups ?",
+          "deleteAllConfirmTitle" : "Confirm delete",
+          "deleteAllConfirm" : "Are you sure you want to delete all backups ?",
+          "backuplist": {
+            "date": "Date",
+            "size": "File size",
+            "location": "Location",
+            "state": "State",
+            "actions": "Actions",
+            "download": "Download",
+            "delete": "Delete",
+            "deleteConfirmTitle": "Confirm delete",
+            "deleteConfirm": "Delete the backup ?"
           }
         },
         "about": {
@@ -635,7 +653,7 @@
           "widgets": "Widgets",
           "table": {
             "displayName": "Name",
-			"version": "Revision",
+            "version": "Revision",
             "authors": "Author(s)",
             "credits": "Credit(s)"
           }
@@ -648,7 +666,7 @@
     }
   },
   "configuration": {
-    "manually-device-model" : {
+    "manually-device-model": {
       "title": "Model",
       "description": "Choose the equipment model to create"
     },
@@ -662,7 +680,7 @@
       "maxNumberItemsAllowed": "the list can't have more than {{maxValue}} items",
       "required": "This is required"
     },
-    "iconpicker-search-prompt" : "Search icon..."
+    "iconpicker-search-prompt": "Search icon..."
   },
   "blockly": {
     "toolbox": {
@@ -679,27 +697,28 @@
       "catVariables": "Variables",
       "catFunctions": "Functions",
       "catTemplate": "Samples",
-      "samples" : {
-        "actionAfterSunset" : {
-            "title" : "Do something after sunset",
-            "logMessage" : "Define here actions to realize after sunset"
+      "samples": {
+        "actionsAtSunriseSunset": {
+          "title": "Actions at sunrise/sunset",
+          "logMessage1": "Define here actions to realize before sunrise",
+          "logMessage2": "Define here actions to realize after sunset"
         },
-        "lowBatteryLevel" : {
-            "title" : "Low battery",
-            "logMessage1" : "Define here actions to realize when any device battery level is low",
-            "logMessage2" : {
-                "part1" : "For example : the battery level of ",
-                "part2" : "is low (",
-                "part3" : " %)"
-            }
+        "lowBatteryLevel": {
+          "title": "Low battery",
+          "logMessage1": "Define here actions to realize when any device battery level is low",
+          "logMessage2": {
+            "part1": "For example : the battery level of ",
+            "part2": "is low (",
+            "part3": " %)"
+          }
         }
       }
     },
     "invalid": "invalid",
-    "validation" : {
-        "errorMaxTopBlock" : "Only 'top block' is allowed. Etiher chain them, or delete all but one",
-        "chooseItemInList" : "Please choose a correct value in list",
-        "missingInputBlock" : "Please complete the missing block"
+    "validation": {
+      "errorMaxTopBlock": "Only 'top block' is allowed. Etiher chain them, or delete all but one",
+      "chooseItemInList": "Please choose a correct value in list",
+      "missingInputBlock": "Please complete the missing block"
     },
     "global": {
       "durationUnits": {
@@ -710,13 +729,13 @@
       }
     },
     "templateHelp": "Click on the blue cog icon, to configure the trigger",
-    "chooseDeviceHelper" :  "Choose device",
-    "chooseKeywordHelper" :  "Choose keyword",
+    "chooseDeviceHelper": "Choose device",
+    "chooseKeywordHelper": "Choose keyword",
     "chooseCapacityHelper": "Choose a capacity",
     "blocks": {
-        "logic_negate" : {
-            "title" : "not"
-        },
+      "logic_negate": {
+        "title": "not"
+      },
       "yadoms_wait": {
         "title": "At",
         "tooltip": "Block the script until the specified date occurs"
@@ -746,20 +765,20 @@
           "serverVersion": "Yadoms server version"
         }
       },
-      "yadoms_wait_for_event_result" : {
-            "title": "from last event",
-            "tooltip": "Get information about last event",
-            "value" : "the value",
-            "deviceName" : "the device name",
-            "keywordName" : "the sensor name",
-            "fullName" : "the full name"
-        },
+      "yadoms_wait_for_event_result": {
+        "title": "from last event",
+        "tooltip": "Get information about last event",
+        "value": "the value",
+        "deviceName": "the device name",
+        "keywordName": "the sensor name",
+        "fullName": "the full name"
+      },
       "yadoms_wait_for_event": {
         "title": "Wait for an event",
         "case": "When",
         "caseCapacity": "When a data of type",
-        "caseDateTimeEveryMinute" : "Every minutes",
-        "caseDateTimeCondition" : "When date/time",
+        "caseDateTimeEveryMinute": "Every minutes",
+        "caseDateTimeCondition": "When date/time",
         "capacity": "capacity",
         "triggered": "is triggered",
         "triggeredType": {
@@ -767,8 +786,8 @@
           "become": "become"
         },
         "triggeredCapacityType": {
-            "change": "is received",
-            "become": ""
+          "change": "is received",
+          "become": ""
         },
         "do": "Then",
         "tooltip": "Wait for an event. It can be a device acquisition update or the date/time change",
@@ -778,19 +797,19 @@
           "base": {
             "title": "Wait for acquisition",
             "tooltip": "Wait for a new acquisition of one or more keywords.",
-            "storeValueInVariable" : "Store the new acquisition in a variable",
-            "storeDeviceNameInVariable" : "Store the device name in a variable"
+            "storeValueInVariable": "Store the new acquisition in a variable",
+            "storeDeviceNameInVariable": "Store the device name in a variable"
           },
-            "keyword": {
-                "title": "When a device send data",
-                "tooltip": "Add a block for monitoring any data of a device",
-                "condition" : "on condition"
-            },
-            "capacity": {
-                "title": "When a data type is received",
-                "tooltip": "Add a block for monitoring any data type from any device",
-                "condition" : "on condition"
-            },
+          "keyword": {
+            "title": "When a device send data",
+            "tooltip": "Add a block for monitoring any data of a device",
+            "condition": "on condition"
+          },
+          "capacity": {
+            "title": "When a data type is received",
+            "tooltip": "Add a block for monitoring any data type from any device",
+            "condition": "on condition"
+          },
           "change": {
             "title": "Device : any new acquisition",
             "tooltip": "Add a block for monitoring any new acquisition of a device"
@@ -942,7 +961,10 @@
       "unableToGetWidgets": "Unable to get Widgets",
       "partOfWidgetIsMissing": "Unable to get part of {{widgetName}} widget. Widgets of this type have been deactivated.",
       "widgetHasGeneratedAnExceptionDuringCallingMethod": "The widget {{widgetName}} has generated an exception calling {{methodName}}()",
-      "errorDuringGettingDeviceInformation": "Error during getting device information"
+      "errorDuringGettingDeviceInformation": "Error during getting device information",
+      "loadingWidgetsError": "Error during the loading of a widget",
+      "widgetDisabled": "The widget __widgetName__ have been disabled because of the configuration is not correct (deleted/missing equipment configured)",
+      "unknownError" : "Unknow error"
     },
     "widgetPackageManager": {
       "incorrectPackage": "Incorrect package",
@@ -958,7 +980,7 @@
         "errorDuringUpdatingConfiguration": "Error in updating configuration {{section}}.{{key}}"
     },
     "interpreter": {
-        "errorListingInterpreters" :  "An error has occurred listing script interpreters"
+      "errorListingInterpreters": "An error has occurred listing script interpreters"
     },
     "recipient": {
       "errorGettingRecipientList": "An error has occurred acquiring recipient list",
@@ -970,8 +992,8 @@
         },
         "mobile": {
           "name": "Mobile phone (system)",
-          "description": "The mobile phone number of the recipient (system)",
-          "regexErrorMessage": ""
+          "description": "The mobile phone number of the recipient (system) : (international format : +33601020304)",
+          "regexErrorMessage": "It must match a valid phone number (beginning with +, no space, no -)"
         }
       }
     },
@@ -1072,7 +1094,7 @@
   },
   "initialization": {
     "homePage": "Home Page",
-    "loading" : "Yadoms is loading..."
+    "loading": "Yadoms is loading..."
   },
   "inProgress": "Development in progress ...",
   "data": {
@@ -1081,7 +1103,7 @@
       "ampere": "A",
       "decibel": "dB",
       "decibelPerMilliWatt": "dBm",
-      "cubicMetre" : "m3",
+      "cubicMetre": "m3",
       "degrees": "°",
       "degreesCelcius": "°C",
       "degreesFarenheit": "°F",
@@ -1179,14 +1201,14 @@
       }
     }
   },
-  "help-page" : {
-    "title" : "Yadoms help page"
+  "help-page": {
+    "title": "Yadoms help page"
   },
-  "filesize-units" : {
-    "b" : "bytes",
-    "kb" : "kB",
-    "mb" : "MB",
-    "gb" : "GB",
-    "tb" : "TB"
+  "filesize-units": {
+    "b": "bytes",
+    "kb": "kB",
+    "mb": "MB",
+    "gb": "GB",
+    "tb": "TB"
   }
 }

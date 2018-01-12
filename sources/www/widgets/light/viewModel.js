@@ -9,7 +9,7 @@ widgetViewModelCtor =
           //observable data
           this.command = ko.observable(1);
           this.icon = ko.observable("");
-		    this.readonly = ko.observable(true);
+          this.readonly = ko.observable(true);
           this.capacity = "";
 
           // default size
@@ -25,6 +25,12 @@ widgetViewModelCtor =
 
                   switch (self.capacity) {
                      case "dimmable": cmd = newState == 1 ? 100 : 0; break;
+					 case "curtain":
+					    if (newState==1)
+							cmd = "open";
+						else
+							cmd = "close";
+						break;
                      default: cmd = newState; break;
                   }
                                     
@@ -66,24 +72,31 @@ widgetViewModelCtor =
 
           this.configurationChanged = function () {
               var self = this;
+              var deffered;
 
               if ((isNullOrUndefined(this.widget)) || (isNullOrUndefinedOrEmpty(this.widget.configuration)))
                   return;
 
-              if ((!isNullOrUndefined(this.widget.configuration)) && (!isNullOrUndefined(this.widget.configuration.device))) {
+              if (!isNullOrUndefined(this.widget.configuration.device)) {
                   self.widgetApi.registerKeywordAcquisitions(this.widget.configuration.device.keywordId);
 				  
-				  // Get the capacity of the keyword
-				  var deffered = KeywordManager.get(this.widget.configuration.device.keywordId)
-				  .done(function (keyword) {
-					   if ( keyword.accessMode ==="GetSet" )
-						  self.readonly ( false );
-					   else
-						  self.readonly ( true );
+                 // Get the capacity of the keyword
+                 deffered = KeywordManager.get(this.widget.configuration.device.keywordId);
                  
-                  self.capacity   = keyword.capacityName;
-				  });				  
+                 deffered
+                 .done(function (keyword) {
+                     if ( keyword.accessMode ==="GetSet" )
+                       self.readonly ( false );
+                     else
+                       self.readonly ( true );
+                    
+                     self.capacity   = keyword.capacityName;
+                 });
+              }else {
+                 deffered = new $.Deferred().resolve();
               }
+              
+              return deffered.promise();
           };
 
           /**
@@ -97,18 +110,27 @@ widgetViewModelCtor =
               if ((this.widget.configuration != undefined) && (this.widget.configuration.device != undefined)) {
 
                   if (keywordId === this.widget.configuration.device.keywordId) {
-
-                      // Adapt for dimmable or switch capacities
-                      if (parseInt(data.value) !== 0)
-                      {
                         switch (self.capacity) {
-                           case "dimmable": self.command(100); break;
-                           default: self.command(1); break;
+                           case "dimmable": 
+						      if (parseInt(data.value) !== 0) 
+								  self.command(100);
+							  else 
+								  self.command(0); 
+							  break;
+						   case "curtain":
+						      if (data.value === "open")
+							     self.command(1);
+							  else if (data.value === "close")
+								 self.command(0);
+						      break;
+                           default: 
+						      if (parseInt(data.value) !== 0)
+								  self.command(1); 
+							  else 
+								  self.command(0); 
+							  break;
                         }                         
-                      }
-                      else
-                          self.command(0);
-                  }
-              }
+				  }
+			    }
           };
       };

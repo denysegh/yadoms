@@ -108,7 +108,7 @@ WidgetManager.getWidgetOfPageFromServer = function (page) {
 WidgetManager.getViewFromServer_ = function (widgetType) {
     assert(!isNullOrUndefined(widgetType), "widgetType must be defined");
     var d = new $.Deferred();
-
+    
     //we try to download "widget.css" first if present
     asyncLoadCss("widgets/" + widgetType + "/widget.css")
         .always(function () {
@@ -128,9 +128,9 @@ WidgetManager.getViewFromServer_ = function (widgetType) {
                 d.reject(errorMessage);
             });
         });
+        
     return d.promise();
 };
-
 
 /**
  * Get a widget viewModel from the server 
@@ -209,8 +209,8 @@ WidgetManager.updateToServer = function (widget) {
          try {
              WidgetManager.updateWidgetConfiguration_(widget).always(function(){
                 //we ask for a refresh of widget data
-                updateWidgetPolling(widget);
-                d.resolve();
+                updateWidgetPolling(widget)
+                .always(d.resolve);
              });
          }
          catch (e) {
@@ -242,20 +242,22 @@ WidgetManager.updateWidgetConfiguration_ = function (widget) {
             widget.$gridWidget.find('div.panel-widget-title').text("");
         //we clear the listened device list before call the configuration
         widget.listenedKeywords = [];
+        widget.getlastValue = [];
         // Update widget specific values
+        var defferedResult;
+        // default state is OK
+        widget.viewModel.widgetApi.setState(widgetStateEnum.OK);
         if (!isNullOrUndefined(widget.viewModel.configurationChanged)) {
             var defferedResult = widget.viewModel.configurationChanged();
-            //we manage answer if it is a promise or not
-            defferedResult = defferedResult || new $.Deferred().resolve();
-            defferedResult.done(function () {
-                //we manage the toolbar api specific icons
-                widget.viewModel.widgetApi.manageBatteryConfiguration().always(function(){
-					   d.resolve();
-				   });
-            });
-        } else {
-            d.resolve();
         }
+        //we manage answer if it is a promise or not
+        defferedResult = defferedResult || new $.Deferred().resolve();
+        defferedResult
+        .always(function () {
+           //we manage the toolbar api specific icons
+           widget.viewModel.widgetApi.manageBatteryConfiguration()
+           .always(d.resolve);
+        });        
     }
     catch (e) {
         notifyWarning($.t("objects.widgetManager.widgetHasGeneratedAnExceptionDuringCallingMethod", { widgetName: widget.type, methodName: 'configurationChanged' }));
@@ -310,10 +312,11 @@ WidgetManager.loadWidgets = function (widgetList, pageWhereToAdd) {
     $.when.apply($, arrayOfDeffered)
     .done(function () {
         var arrayOfLoadingWidgetDeferred = [];
+        
         $.each(widgetList, function (index, widget) {
             arrayOfLoadingWidgetDeferred.push(WidgetManager.loadWidget(widget, pageWhereToAdd));
         });
-
+           
         $.when.apply($, arrayOfLoadingWidgetDeferred)
         .done(d.resolve)
         .fail(d.reject);
@@ -335,26 +338,24 @@ WidgetManager.downloadWidgetViewAndVieWModel_ = function (widgetType, canReject)
 
     WidgetManager.getViewFromServer_(widgetType)
     .done(function () {
-        WidgetManager.getViewModelFromServer_(widgetType)
-        .done(function () {
-            d.resolve();
-        })
-        .fail(function (error) {
-            if (canReject) {
-                d.reject(error);
-            } else {
-                console.error(error);
-                d.resolve();
-            }
+       WidgetManager.getViewModelFromServer_(widgetType)
+       .done(d.resolve)
+       .fail(function (error) {
+          if (canReject) {
+             d.reject(error);
+          } else {
+             console.error(error);
+             d.resolve();
+          }
         });
     })
     .fail(function (error) {
-        if (canReject) {
-            d.reject(error);
-        } else {
-            console.error(error);
-            d.resolve();
-        }
+       if (canReject) {
+          d.reject(error);
+       } else {
+          console.error(error);
+          d.resolve();
+       }
     });
 
     return d.promise();
@@ -373,22 +374,31 @@ WidgetManager.loadWidget = function (widget, pageWhereToAdd, ensureVisible) {
     assert(!isNullOrUndefined(widget), "widget must be defined");
     assert(!isNullOrUndefined(pageWhereToAdd), "pageWhereToAdd must be defined");
 
+    var d = $.Deferred();
+    
     if (!WidgetPackageManager.packageExists(widget.type)) {
-        return WidgetManager.instanciateDowngradedWidgetToPage_(pageWhereToAdd, widget, "package do not exists", ensureVisible);
+       return WidgetManager.instanciateDowngradedWidgetToPage_(pageWhereToAdd, widget, "package do not exists", ensureVisible);
     } else {
-
-        if (!WidgetPackageManager.packageList[widget.type].viewAnViewModelHaveBeenDownloaded) {
-            WidgetManager.downloadWidgetViewAndVieWModel_(widget.type, true)
-            .done(function () {
-                return WidgetManager.instanciateWidgetToPage_(pageWhereToAdd, widget, widget.type, ensureVisible);
-            })
-            .fail(function (errorMessage) {
-                return WidgetManager.instanciateDowngradedWidgetToPage_(pageWhereToAdd, widget, errorMessage, ensureVisible);
-            });
-        } else {
-            return WidgetManager.instanciateWidgetToPage_(pageWhereToAdd, widget, widget.type, ensureVisible);
-        }
+       if (!WidgetPackageManager.packageList[widget.type].viewAnViewModelHaveBeenDownloaded) {
+          WidgetManager.downloadWidgetViewAndVieWModel_(widget.type, true)
+          .done(function () {
+             WidgetManager.instanciateWidgetToPage_(pageWhereToAdd, widget, widget.type, ensureVisible)
+             .done(d.resolve)
+             .fail(d.reject);
+          })
+          .fail(function (errorMessage) {
+             WidgetManager.instanciateDowngradedWidgetToPage_(pageWhereToAdd, widget, errorMessage, ensureVisible)
+             .done(d.resolve)
+             .fail(d.reject);             
+          });
+       }else {
+          WidgetManager.instanciateWidgetToPage_(pageWhereToAdd, widget, widget.type, ensureVisible)
+          .done(d.resolve)
+          .fail(d.reject);
+       }
     }
+    
+    return d.promise();
 };
 
 
@@ -407,14 +417,17 @@ WidgetManager.instanciateWidgetToPage_ = function (pageWhereToAdd, widget, widge
     try {
         //we finalize the load of the widget
         WidgetManager.consolidate_(widget, WidgetPackageManager.packageList[widgetType]);
-        WidgetManager.addToDom_(widget, ensureVisible).done(function(){
+        WidgetManager.addToDom_(widget, ensureVisible)
+        .done(function () {
+           //we add the widget to the collection
+           pageWhereToAdd.addWidget(widget);
            d.resolve();
         })
-        .fail(function(){
+        .fail(function () {
+           //we add the widget to the collection
+           pageWhereToAdd.addWidget(widget);           
            d.reject();
         });
-        //we add the widget to the collection
-        pageWhereToAdd.addWidget(widget);
     }
     catch (ex) {
         if (!widget.downgraded) {
@@ -507,9 +520,11 @@ WidgetManager.addToDom_ = function (widget, ensureVisible) {
             var defferedResult = widget.viewModel.initialize();
             //we manage answer if it is a promise or not
             defferedResult = defferedResult || new $.Deferred().resolve();
-            defferedResult.done(function () {
+            defferedResult
+            .done(function () {
                 //we notify that configuration has changed
-                WidgetManager.updateWidgetConfiguration_(widget).done(function () {
+                WidgetManager.updateWidgetConfiguration_(widget)
+                .done(function () {
                     //we notify that widget has been resized
                     var defferedResized;
                     try {
@@ -524,7 +539,8 @@ WidgetManager.addToDom_ = function (widget, ensureVisible) {
 
                     //we manage answer if it is a promise or not
                     defferedResized = defferedResized || new $.Deferred().resolve();
-                    defferedResized.done(function () {
+                    defferedResized
+                    .done(function () {
                         widget.$gridWidget.i18n();
 
                         if (ensureVisible === true) {
@@ -533,15 +549,25 @@ WidgetManager.addToDom_ = function (widget, ensureVisible) {
                         }
 						
                         widget.$gridWidget.find(".textfit").fitText();
-						
-                        //we ask for widget refresh data
-                        updateWidgetPolling(widget).always(function() {
-                           widget.viewModel.widgetApi.manageRollingTitle();
-                           d.resolve();                           
-                        });
-                    });
+                        widget.viewModel.widgetApi.manageRollingTitle();
+                        d.resolve();
+                    }).fail(d.reject);
+                }).fail(function () {
+                   widget.$gridWidget.i18n();
+                   
+                   if (ensureVisible === true) {
+                      //ensure the item is completly visible
+                      widget.$gridWidget.ensureVisible(true);
+                   }
+            
+                   widget.$gridWidget.find(".textfit").fitText();
+                   widget.viewModel.widgetApi.manageRollingTitle();
+                   d.reject();
                 });
-            });
+            })
+            .fail(d.reject);
+        } else {
+           d.reject("view model do not implement 'initialize' method");
         }
     }
     catch (e) {
@@ -618,6 +644,7 @@ WidgetManager.createGridWidget = function (widget) {
 
     domWidget += ">\n" +
         "<div class=\"grid-item-content\">\n" +
+          "<div class=\"panel-widget-desactivated hidden\"><div class=\"panel-widget-header-desactivated\"><i class=\"fa fa-exclamation-triangle wigetConfigurationErrorIcon\" title=\""+ $.t("objects.widgetManager.unknownError") +"\"></i></div></div>\n" +
           "<div class=\"panel-widget-customization-overlay customization-item hidden\">\n" +
              "<div class=\"customizationToolbar widgetCustomizationToolbar\">";
 
@@ -687,15 +714,16 @@ WidgetManager.createGridWidget = function (widget) {
 
             resizeTimeout = setTimeout(function () {
                 try {
-                    if (widget.viewModel.resized !== undefined)
-					{
-                        var defferedResult = widget.viewModel.resized();
-                        //we manage answer if it is a promise or not
-                        defferedResult = defferedResult || new $.Deferred().resolve();
-                        defferedResult.always(function() {
-                           widget.viewModel.widgetApi.manageRollingTitle();
-                        });
-					}
+                   
+                    var defferedResult;
+                    if (widget.viewModel.resized !== undefined){
+                        defferedResult = widget.viewModel.resized();
+                    }
+                    //we manage answer if it is a promise or not
+                    defferedResult = defferedResult || new $.Deferred().resolve();
+                    defferedResult.always(function() {
+                       widget.viewModel.widgetApi.manageRollingTitle();
+                    });
                 }
                 catch (e) {
                     notifyWarning($.t("widgets.errors.widgetHasGeneratedAnExceptionDuringCallingMethod", { widgetName: widget.type, methodName: 'resized' }));

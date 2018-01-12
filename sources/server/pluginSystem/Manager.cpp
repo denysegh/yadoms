@@ -23,7 +23,7 @@
 
 namespace pluginSystem
 {
-   CManager::CManager(const IPathProvider& pathProvider,
+   CManager::CManager(boost::shared_ptr<const IPathProvider> pathProvider,
                       boost::shared_ptr<database::IDataProvider> dataProvider,
                       boost::shared_ptr<dataAccessLayer::IDataAccessLayer> dataAccessLayer,
                       boost::shared_ptr<shared::ILocation> location,
@@ -196,7 +196,7 @@ namespace pluginSystem
 
          // Remove in database
          boost::lock_guard<boost::recursive_mutex> lock(m_runningInstancesMutex);
-         m_dataProvider->getDeviceRequester()->removeAllDeviceForPlugin(id);
+         m_dataAccessLayer->getDeviceManager()->removeAllDeviceForPlugin(id);
          m_pluginDBTable->removeInstance(id);
 
          // Remove logs
@@ -315,7 +315,7 @@ namespace pluginSystem
          startInstance(*instanceToStart);
    }
 
-   void CManager::stopAllInstancesOfPlugin(const std::string& pluginName)
+   std::vector<int> CManager::stopAllInstancesOfPlugin(const std::string& pluginName)
    {
       boost::lock_guard<boost::recursive_mutex> lock(m_runningInstancesMutex);
 
@@ -330,6 +330,49 @@ namespace pluginSystem
       // Stop all instances of this plugin
       for (std::vector<int>::const_iterator instanceToStop = instancesToStop.begin(); instanceToStop != instancesToStop.end(); ++instanceToStop)
          requestStopInstance(*instanceToStop);
+
+      return instancesToStop;
+   }
+
+   void CManager::stopAllInstancesOfPluginAndWaitForStopped(const std::string& pluginName,
+                                                            const boost::posix_time::time_duration& timeout)
+   {
+      YADOMS_LOG(debug) << "Stop all instances of " << pluginName << "...";
+      auto instancesToStop = stopAllInstancesOfPlugin(pluginName);
+
+      const auto endTime = shared::currentTime::Provider().now() + timeout;
+      auto someInstancesStillRunning = true;
+      while (someInstancesStillRunning && shared::currentTime::Provider().now() <= endTime)
+      {
+         someInstancesStillRunning = false;
+         for (const auto instance:instancesToStop)
+            if (isInstanceRunning(instance))
+               someInstancesStillRunning = true;
+
+         if (someInstancesStillRunning)
+            boost::this_thread::sleep(boost::posix_time::seconds(1));
+      }
+
+      if (someInstancesStillRunning)
+      {
+         YADOMS_LOG(error) << "Unable to stop all instances of plugin " << pluginName << ", try to kill...";
+         for (const auto instance:instancesToStop)
+            if (isInstanceRunning(instance))
+               killInstance(instance);
+
+         boost::this_thread::sleep(boost::posix_time::seconds(1));
+
+         // Check
+         someInstancesStillRunning = false;
+         for (const auto instance:instancesToStop)
+            if (isInstanceRunning(instance))
+               someInstancesStillRunning = true;
+
+         if (someInstancesStillRunning)
+            throw std::runtime_error((boost::format("Unable to stop all instances of plugin %1%") % pluginName).str());
+      }
+
+      YADOMS_LOG(debug) << "All instances of " << pluginName << " are stopped";
    }
 
    void CManager::notifyDeviceRemoved(int deviceId) const
@@ -384,23 +427,38 @@ namespace pluginSystem
       }
       catch (shared::exception::CEmptyResult& e)
       {
-         throw CPluginException((boost::format("Invalid plugin instance %1%, element not found in database : %2%") % id % e.what()).str());
+         std::ostringstream oss;
+         oss << "Invalid plugin instance " << id << ", element not found in database : " << e.what();
+         YADOMS_LOG(error) << oss.str();
+         throw CPluginException(oss.str());
       }
       catch (CInvalidPluginException& e)
       {
-         throw CPluginException((boost::format("Invalid plugin instance %1%, because of an invalid plugin : %2%") % id % e.what()).str());
+         std::ostringstream oss;
+         oss << "Invalid plugin instance " << id << ", because of an invalid plugin : " << e.what();
+         YADOMS_LOG(error) << oss.str();
+         throw CPluginException(oss.str());
       }
       catch (shared::exception::COutOfRange& e)
       {
-         throw CPluginException((boost::format("Invalid plugin instance %1% configuration, out of range : %2%") % id % e.what()).str());
+         std::ostringstream oss;
+         oss << "Invalid plugin instance " << id << "configuration, out of range : " << e.what();
+         YADOMS_LOG(error) << oss.str();
+         throw CPluginException(oss.str());
       }
       catch (std::exception& e)
       {
-         throw CPluginException((boost::format("Unable to start instance %1% %2%") % id % e.what()).str());
+         std::ostringstream oss;
+         oss << "Unable to start instance " << id << " : " << e.what();
+         YADOMS_LOG(error) << oss.str();
+         throw CPluginException(oss.str());
       }
       catch (...)
       {
-         throw CPluginException((boost::format("Unable to start instance %1%, unknown error") % id).str());
+         std::ostringstream oss;
+         oss << "Unable to start instance " << id << ", unknown error";
+         YADOMS_LOG(error) << oss.str();
+         throw CPluginException(oss.str());
       }
    }
 
@@ -431,7 +489,7 @@ namespace pluginSystem
          if (!m_runningInstances.empty())
          {
             for (const auto& instance : m_runningInstances)
-               instance.second->kill();         
+               instance.second->kill();
          }
       }
 
@@ -478,7 +536,8 @@ namespace pluginSystem
                break;
          }
          boost::this_thread::yield();
-      } while (shared::currentTime::Provider().now() < timeout);
+      }
+      while (shared::currentTime::Provider().now() < timeout);
 
       {
          boost::lock_guard<boost::recursive_mutex> lock(m_runningInstancesMutex);
@@ -498,7 +557,8 @@ namespace pluginSystem
                break;
          }
          boost::this_thread::yield();
-      } while (shared::currentTime::Provider().now() < timeout);
+      }
+      while (shared::currentTime::Provider().now() < timeout);
 
       {
          boost::lock_guard<boost::recursive_mutex> lock(m_runningInstancesMutex);
@@ -513,9 +573,9 @@ namespace pluginSystem
          {
             boost::lock_guard<boost::recursive_mutex> lock(m_runningInstancesMutex);
 
-            const auto interpreter = m_runningInstances.find(pluginInstanceId);
-            if (interpreter != m_runningInstances.end())
-               m_runningInstances.erase(interpreter);
+            const auto pluginInstance = m_runningInstances.find(pluginInstanceId);
+            if (pluginInstance != m_runningInstances.end())
+               m_runningInstances.erase(pluginInstance);
          });
    }
 
@@ -662,11 +722,11 @@ namespace pluginSystem
 
       YADOMS_LOG(debug) << "Send extra query " << query->getData()->query() << " to plugin " << instance->about()->DisplayName();
 
-      boost::shared_ptr<task::ITask> task(boost::make_shared<task::plugins::CExtraQuery>(instance, query)); 
+      boost::shared_ptr<task::ITask> task(boost::make_shared<task::plugins::CExtraQuery>(instance, query));
 
       std::string taskUid = "";
       bool result = m_taskScheduler->runTask(task, taskUid);
-      if(!result)
+      if (!result)
       {
          YADOMS_LOG(error) << "Fail to send extra query " << query->getData()->query() << " to plugin " << instance->about()->DisplayName();
          //ensure taskId is set to ""
@@ -750,3 +810,5 @@ namespace pluginSystem
       instance->postSetDeviceConfiguration(command);
    }
 } // namespace pluginSystem
+
+
