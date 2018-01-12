@@ -76,12 +76,12 @@
         "fail": "Backup failed"
       }
     },
-     "plugins": {
-         "extraQuery" : {
-            "success": "{{extraquery}} succeeded",
-            "fail": "{{extraquery}} failed"
-         }
-     }
+    "plugins": {
+      "extraQuery": {
+        "success": "{{extraquery}} succeeded",
+        "fail": "{{extraquery}} failed"
+      }
+    }
   },
   "common": {
     "ok": "Ok",
@@ -170,11 +170,11 @@
         "description": "Text displayed for the widget"
       },
       "errorDuringGettingDeviceList": "Error during getting device list",
-      "errorDuringGettingDeviceListMatchCapacity": "Error during getting device list that match capacity {{expectedCapacityAccess}} {{expectedCapacity}}",
-      "errorDuringGettingDeviceListMatchCapacityType": "Error during getting device list that match capacity type {{expectedCapacityAccess}} {{expectedCapacityType}}",
+      "errorDuringGettingDeviceListMatchCapacity": "Error during getting device list that match capacity {{expectedCapacityAccess__ __expectedCapacity}}",
+      "errorDuringGettingDeviceListMatchCapacityType": "Error during getting device list that match capacity type {{expectedCapacityAccess__ __expectedCapacityType}}",
       "errorDuringGettingDeviceListMatchKeywordAccess": "Error during getting device list that match keyword with access mode {{expectedKeywordAccess}}",
       "errorDuringGettingKeywordList": "Error during getting keyword list",
-      "errorDuringGettingKeywordListMatchCapacity": "Error during getting keyword list that match capacity {{expectedCapacityAccess}} {{expectedCapacity}}",
+      "errorDuringGettingKeywordListMatchCapacity": "Error during getting keyword list that match capacity {{expectedCapacityAccess__ __expectedCapacity}}",
       "errorDuringGettingSerialPortList": "Error during getting serial port list"
     },
     "delete-widget": {
@@ -500,7 +500,7 @@
           "new": "Create a new recipient",
           "edit": "Edit the recipient",
           "delete": "Delete the recipient",
-          "confirmRecipientDeletion": "This action will delete the recipient {{firstName}} {{lastName}}. Continue anyway ?",
+          "confirmRecipientDeletion": "This action will delete the recipient {{firstName__ __lastName}}. Continue anyway ?",
           "table": {
             "firstName": "First name",
             "lastName": "Last name",
@@ -559,7 +559,7 @@
           "delete": "Delete the rule",
           "confirmDeletion": "This action will delete the rule {{name}}. Continue anyway ?",
           "log": "View log",
-          "confirmLogDeletion": "This action will delete the __name__ rule log. Continue anyway ?",
+          "confirmLogDeletion": "This action will delete the {{name}} rule log. Continue anyway ?",
           "ruleSuccessfullyCreated": "Rule successfully created",
           "ruleSuccessfullyUpdated": "Rule successfully updated",
           "ruleDeleted": "Rule successfully removed",
@@ -573,7 +573,7 @@
           "ruleListingError": "Fail to list rules.",
           "ruleInterpreterListingError": "Fail to list rule interpreters.",
           "ruleGetLogError": "Fail to get logs of rule {{rule}}.",
-          "ruleDeleteLogError": "Fail to delete logs of rule __rule__.",
+          "ruleDeleteLogError": "Fail to delete logs of rule {{rule}}.",
           "editors": {
             "code": {
               "name": "Code"
@@ -607,9 +607,9 @@
             "install": "Install",
             "uninstall": "Uninstall",
             "confirmUpdateTitle": "Confirm update",
-            "confirmUpdate": "Update {{objectName}} to version {{version}} ?",
+            "confirmUpdate": "Update {{objectName__ to version __version}} ?",
             "confirmInstallTitle": "Confirm install",
-            "confirmInstall": "Install {{objectName}} to version {{version}} ?",
+            "confirmInstall": "Install {{objectName__ to version __version}} ?",
             "confirmRemoveTitle": "Confirm uninstall",
             "confirmRemove": "Uninstall {{objectName}} ?"
           },
@@ -960,10 +960,10 @@
       "errorDuringModifyingWidgetNamed": "Error during modifying widget of type {{widgetType}}",
       "unableToGetWidgets": "Unable to get Widgets",
       "partOfWidgetIsMissing": "Unable to get part of {{widgetName}} widget. Widgets of this type have been deactivated.",
-      "widgetHasGeneratedAnExceptionDuringCallingMethod": "The widget {{widgetName}} has generated an exception calling {{methodName}}()",
+      "widgetHasGeneratedAnExceptionDuringCallingMethod": "The widget {{widgetName__ has generated an exception calling __methodName}}()",
       "errorDuringGettingDeviceInformation": "Error during getting device information",
       "loadingWidgetsError": "Error during the loading of a widget",
-      "widgetDisabled": "The widget __widgetName__ have been disabled because of the configuration is not correct (deleted/missing equipment configured)",
+      "widgetDisabled": "The widget {{widgetName}} have been disabled because of the configuration is not correct (deleted/missing equipment configured)",
       "unknownError" : "Unknow error"
     },
     "widgetPackageManager": {
@@ -974,10 +974,10 @@
       "errorDuringGettingPages": "Error during requesting pages"
     },
     "ConfigurationManager": {
-        "errorDuringGettingSystemConfiguration": "Error during getting configuration",
-        "errorDuringGettingConfiguration": "Error in reading configuration {{section}}.{{key}}",
-        "errorDuringCreatingConfiguration": "Error in creating configuration {{section}}.{{key}}",
-        "errorDuringUpdatingConfiguration": "Error in updating configuration {{section}}.{{key}}"
+      "errorDuringGettingSystemConfiguration": "Error during getting configuration",
+      "errorDuringGettingConfiguration": "Error in reading configuration {{section__.__key}}",
+      "errorDuringCreatingConfiguration": "Error in creating configuration {{section__.__key}}",
+      "errorDuringUpdatingConfiguration": "Error in updating configuration {{section__.__key}}"
     },
     "interpreter": {
       "errorListingInterpreters": "An error has occurred listing script interpreters"
@@ -1020,7 +1020,7 @@
     }
   },
   "eventLogger": {
-    "DefaultCode": "Unknown event : {{what}} generated by {{who}}",
+    "DefaultCode": "Unknown event : {{what__ generated by __who}}",
     "Started": "{{who}} has started",
     "Stopped": "{{who}} has stopped",
     "Updated": "The {{who}} has been updated",
@@ -1073,18 +1073,18 @@
     }
   },
   "asyncPort": {
-     "tcp": {
-        "connectionClosed" : "TCP connection closed",
-        "connectionError" : "TCP connection error",
-        "operationAborted" : "Operation cancelled (error)"
-     },
-     "serial" : {
-        "error" : "Error communicating with hardware",
-        "failToCommunicateWithHardware" : "Unable to communicate with hardware. Check the hardware and its configuration",
-        "connectionClosed" : "Connection with hardware closed (serial link)",
-        "connectionError" : "Hardware connection error (serial link)",
-        "failToOpen" : "Unable to open serial link {{port}}. Check hardware or configuration."
-     }
+    "tcp": {
+      "connectionClosed": "TCP connection closed",
+      "connectionError": "TCP connection error",
+      "operationAborted": "Operation cancelled (error)"
+    },
+    "serial": {
+      "error": "Error communicating with hardware",
+      "failToCommunicateWithHardware": "Unable to communicate with hardware. Check the hardware and its configuration",
+      "connectionClosed": "Connection with hardware closed (serial link)",
+      "connectionError": "Hardware connection error (serial link)",
+      "failToOpen": "Unable to open serial link {{port}}. Check hardware or configuration."
+    }
   },
   "system": {
     "yadoms": "yadoms",

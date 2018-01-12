@@ -310,16 +310,7 @@ PluginInstanceManager.downloadPackage = function (pluginInstance) {
       RestEngine.getJson("plugins/" + pluginInstance.type + "/package.json")
          .done(function (data) {
             pluginInstance.package = data;
-
-            //we manage i18n
-            //i18next.options.backend.addPath = '{{ns}}/locales/{{lng}}.json';
-            i18next.loadNamespaces("plugins\\" + pluginInstance.type, function(err,t){
-               //we restore the resGetPath
-               //i18next.options.backend.addPath = '';
-
-               d.resolve();
-            });
-
+            i18nManager.loadNamespace("plugins", pluginInstance.type).done(d.resolve).fail(d.reject);
          })
          .fail(d.reject);
    } else {

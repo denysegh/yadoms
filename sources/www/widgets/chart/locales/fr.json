@@ -116,5 +116,14 @@
 		"month": "1m",
 		"half_month": "6m",
 		"year": "1a"
-	}
+	},
+  "export": {
+    "print": "Imprimer",
+    "png": "Fichier Png",
+    "jpeg": "Fichier Jpeg",
+    "pdf": "Fichier Pdf",
+    "svg": "Fichier Svg",
+    "csv": "Fichier Csv",
+    "xls": "Fichier Xls"
+  }
 }

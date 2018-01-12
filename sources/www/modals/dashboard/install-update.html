@@ -676,7 +676,7 @@
         assert(!isNullOrUndefined(item), "item must be defined");
 
         var s = "<tr id=\"" + item.type + "\">" +
-                    "<td><span>" + $.t(objectType + "s\\" + item.type + ":name", { defaultValue: item.package.name }) + "</span>" +
+                    "<td><span>" + $.t(objectType + "s." + item.type + ":name", { defaultValue: item.package.name }) + "</span>" +
                     "<span class=\"update-available-label hidden label label-as-badge label-success\">!</span>" +
                     "</td>";
 
@@ -687,7 +687,7 @@
             s += "<td><img src=\"" + (item.iconUrl ? item.iconUrl : objectType + "s/" + item.type + "/preview.png") + "\" class=\"img-thumbnail dashboard-table-icon\"></td>";
         }
 
-        s += "<td><span>" + $.t(objectType + "s\\" + item.type + ":description", { defaultValue: item.package.description }) + "</span></td>" +
+        s += "<td><span>" + $.t(objectType + "s." + item.type + ":description", { defaultValue: item.package.description }) + "</span></td>" +
                     "<td><em class=\"local-version\"></em></td>" +
                     "<td><em class=\"latest-version\"></em></td>" +
                     "<td>" +

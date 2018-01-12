@@ -25,16 +25,13 @@ WidgetPackageManager.factory = function(json) {
    wp.package = json;
    wp.type = json.type;
    //we manage i18n
-   //i18next.options.backend.addPath = '{{ns}}/locales/{{lng}}.json';
-   i18next.loadNamespaces("widgets\\" + json.type, function(err,t) {
-      //we restore the resGetPath
-      //i18next.options.backend.addPath = '';
-      
+   i18nManager.loadNamespace("widgets", json.type)
+   .done(function() {
       wp.viewAnViewModelHaveBeenDownloaded = false;
+      d.resolve(wp);      
+   })
+   .fail(d.reject);
 
-      d.resolve(wp);
-   });
-   
    return d.promise();
    
 };
@@ -62,11 +59,20 @@ WidgetPackageManager.getAll = function () {
             });
          });
          
-         //
-         $.each(newWidgetPackages, function(index, newPackage) {
-            if(WidgetPackageManager.packageList[newPackage.type]) {
-               //if already exists and newer
-               if(newPackage.package.version != WidgetPackageManager.packageList[newPackage.type].package.version) {
+        
+        $.whenAll(deferredArray)
+         .done(function() {
+            //
+            $.each(newWidgetPackages, function(index, newPackage) {
+               if(WidgetPackageManager.packageList[newPackage.type]) {
+                  //if already exists and newer
+                  if(newPackage.version != WidgetPackageManager.packageList[newPackage.type].version) {
+                     WidgetPackageManager.packageList[newPackage.type] = newPackage;
+                  } else {
+                     //already exist, same version, so do nothing
+                  }
+               } else {
+                  //if not exists
                   WidgetPackageManager.packageList[newPackage.type] = newPackage;
                }
             });

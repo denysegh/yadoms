@@ -61,16 +61,13 @@ AutomationInterpreterManager.getAllDetailed = function () {
          var deferred = RestEngine.get("scriptInterpreters/" + value.type + "/package.json", { dataType: "json" });
          deferredArray.push(deferred);
 
-         //we restore the resGetPath
-         var d = new $.Deferred();
-         deferredArray.push(d);
-         i18next.loadNamespaces("scriptInterpreters\\" + value.type, function() { d.resolve(); });
+         deferredArray.push(i18nManager.loadNamespace("scriptInterpreters", value.type));
          
          deferred.done(function (data) {
              value.fillDetails(data);
           })
           .fail(function() {
-             notifyError($.t("objects.generic.errorGetting", {objectName : "scriptInterpreters/" + value + "/package.json"}));
+             notifyError($.t("objects.generic.errorGetting", {objectName : "scriptInterpreters." + value + "/package.json"}));
           });
       });
 
