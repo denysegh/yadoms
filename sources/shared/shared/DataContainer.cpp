@@ -3,6 +3,11 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <shared/exception/JSONParse.hpp>
 #include "exception/EmptyResult.hpp"
+#include "rapidJson/writer.h"
+#include "rapidJson/istreamwrapper.h"
+#include "rapidJson/ostreamwrapper.h"
+#include "rapidJson/prettywriter.h"
+#include "rapidJson/pointer.h"
 
 namespace shared
 {
@@ -10,16 +15,39 @@ namespace shared
 
    CDataContainer::CDataContainer()
    {
-
+      m_tree.SetObject();
+      
    }
 
    CDataContainer::CDataContainer(const std::string & initialData)
    {
+      m_tree.SetObject();
       CDataContainer::deserialize(initialData);
    }
 
+   CDataContainer::CDataContainer(rapidjson::Value & d)
+   {
+      m_tree.SetObject();
+      rapidjson::Document::AllocatorType& a = m_tree.GetAllocator();
+      m_tree.CopyFrom(d, a);
+   }
+
+   CDataContainer::CDataContainer(rapidjson::Value * d)
+   {
+      m_tree.SetObject();
+      m_tree.CopyFrom(*d, m_tree.GetAllocator());
+   }
+
+   CDataContainer::CDataContainer(rapidjson::Document & d)
+   {
+      m_tree.SetObject();
+      m_tree.CopyFrom(d, m_tree.GetAllocator());
+   }
+
+
    CDataContainer::CDataContainer(const std::map<std::string, std::string> & initialData)
    {
+      m_tree.SetObject();
       std::map<std::string, std::string>::const_iterator i;
       for (i = initialData.begin(); i != initialData.end(); ++i)
          set(i->first, i->second);
@@ -34,13 +62,15 @@ namespace shared
 
    CDataContainer::CDataContainer(const CDataContainer & initialData)
    {
-      m_tree = initialData.m_tree;
+      m_tree.SetObject();
+      m_tree.CopyFrom(initialData.m_tree, m_tree.GetAllocator());
    }
 
    
-   CDataContainer::CDataContainer(const boost::property_tree::ptree & initialTree)
+   CDataContainer::CDataContainer(const rapidjson::Document & initialTree)
    {
-      m_tree = initialTree;
+      m_tree.SetObject();
+      m_tree.CopyFrom(initialTree, m_tree.GetAllocator());
    }
 
    CDataContainer & CDataContainer::operator =(const CDataContainer & rhs)
@@ -68,17 +98,11 @@ namespace shared
    {
       boost::lock_guard<boost::mutex> lock(dc.m_treeMutex);
 
-      dc.m_tree.clear();
+      dc.m_tree.RemoveAllMembers();
 
-      try
-      {
-         boost::property_tree::json_parser::read_json(is, dc.m_tree);
-      }
-      catch (boost::property_tree::json_parser::json_parser_error& e)
-      {
-         throw exception::CInvalidParameter(e.what());
-      }
+      rapidjson::IStreamWrapper isw(is);
 
+      dc.m_tree.ParseStream(isw);
       return is;
    }
 
@@ -87,39 +111,32 @@ namespace shared
    {
       boost::lock_guard<boost::mutex> lock(m_treeMutex);
 
-      boost::optional<const boost::property_tree::ptree&> value = m_tree.get_child_optional(generatePath(parameterName, pathChar));
-      return !!value;
+      rapidjson::Value* found = findValue(parameterName, pathChar);
+      return (found != NULL);
    }
 
 
    bool CDataContainer::containsChild(const std::string& parameterName, const char pathChar) const
    {
       boost::lock_guard<boost::mutex> lock(m_treeMutex);
-
-      boost::optional<const boost::property_tree::ptree&> value = m_tree.get_child_optional(generatePath(parameterName, pathChar));
-      if (!!value)
-      {
-         return !value->empty() && value->data().empty();
-      }
-      else
-      {
-         return false;
-      }
+      rapidjson::Value* found = findValue(parameterName, pathChar);
+      if (found)
+         return !found->IsNull() && found->IsObject();
+      return false;
    }
 
    bool CDataContainer::containsValue(const std::string& parameterName, const char pathChar) const
    {
       boost::lock_guard<boost::mutex> lock(m_treeMutex);
 
-      boost::optional<const boost::property_tree::ptree&> value = m_tree.get_child_optional(generatePath(parameterName, pathChar));
-      if (!!value)
+      rapidjson::Value* found = findValue(parameterName, pathChar);
+
+      if (found != NULL && !found->IsNull())
       {
-         return value->empty() && !value->data().empty();
+         return found->IsBool() || found->IsDouble() || found->IsFloat() || found->IsInt() || found->IsInt64() ||
+            found->IsNumber() || found->IsString() || found->IsUint() || found->IsUint64();
       }
-      else
-      {
-         return false;
-      }
+      return false;
    }
 
 
@@ -127,58 +144,47 @@ namespace shared
    {
       boost::lock_guard<boost::mutex> lock(m_treeMutex);
 
-      std::ostringstream buf;
-      boost::property_tree::json_parser::write_json(buf, m_tree, false);
-      return buf.str();
+      rapidjson::StringBuffer sb;
+      rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
+      m_tree.Accept(writer);
+
+      return sb.GetString();
    }
 
    void CDataContainer::deserialize(const std::string & data)
    {
       boost::lock_guard<boost::mutex> lock(m_treeMutex);
 
-      m_tree.clear();
+      m_tree.RemoveAllMembers();
 
-      if (data.empty())
-         return;
-
-      std::istringstream is(data);
-      try
-      {
-         boost::property_tree::json_parser::read_json(is, m_tree);
-      }
-      catch (boost::property_tree::json_parser::json_parser_error& e)
-      {
-         throw exception::CJSONParse(e.what(), e.line());
-      }
+      if (m_tree.Parse(data.c_str()).HasParseError())
+         throw exception::CException("Fail to parse Json");
    }
 
    void CDataContainer::serializeToFile(const std::string & filename) const
    {
-      boost::lock_guard<boost::mutex> lock(m_treeMutex);
-
-      boost::property_tree::json_parser::write_json(filename, m_tree);
+      std::ofstream ofs(filename);
+      rapidjson::OStreamWrapper osw(ofs);
+      rapidjson::Writer<rapidjson::OStreamWrapper> writer(osw);
+      m_tree.Accept(writer);
    }
 
    void CDataContainer::deserializeFromFile(const std::string & file)
    {
       boost::lock_guard<boost::mutex> lock(m_treeMutex);
 
-      m_tree.clear();
+      m_tree.RemoveAllMembers();
 
-      try
-      {
-         boost::property_tree::json_parser::read_json(file, m_tree);
-      }
-      catch (boost::property_tree::json_parser::json_parser_error& e)
-      {
-         throw exception::CJSONParse(e.what(), e.line());
-      }
+      std::ifstream ifs(file);
+      rapidjson::IStreamWrapper isw(ifs);
+
+      m_tree.ParseStream(isw);
    }
 
    void CDataContainer::extractContent(CDataContainer & container) const
    {
       boost::lock_guard<boost::mutex> lock(m_treeMutex);
-      container.m_tree = m_tree;
+      container.m_tree.CopyFrom(m_tree, container.m_tree.GetAllocator());
    }
 
    void CDataContainer::fillFromContent(const CDataContainer & initialData)
@@ -202,40 +208,32 @@ namespace shared
    void CDataContainer::initializeWith(const CDataContainer &rhs)
    {
       boost::lock_guard<boost::mutex> lock(m_treeMutex);
-      m_tree = rhs.m_tree;
+      m_tree.CopyFrom(rhs.m_tree, m_tree.GetAllocator());
    }
 
 
    bool CDataContainer::empty() const
    {
       boost::lock_guard<boost::mutex> lock(m_treeMutex);
-      return m_tree.empty();
+      return m_tree.MemberCount() == 0;
    }
 
    void CDataContainer::printToLog(std::ostream& os) const
    {
       os << std::endl;
-      os << "| TREE START" << std::endl;
-      printToLog(m_tree, 0, os);
-      os << "| TREE END" << std::endl;
+      
+      rapidjson::OStreamWrapper osw(os);
+      rapidjson::PrettyWriter<rapidjson::OStreamWrapper> writer(osw);
+      m_tree.Accept(writer);
    }
 
-   void CDataContainer::printToLog(const boost::property_tree::ptree & pt, const int deep, std::ostream& os) const
+   std::string CDataContainer::generatePath(const std::string & parameterName, const char pathChar) const
    {
-      std::string prefix;
-      for (auto i = 0; i < deep; ++i)
-         prefix += "   ";
-		prefix += "|-";
-      for (const auto it : pt)
-      {
-         os << prefix << it.first << " : " << it.second.get_value<std::string>() << std::endl;
-         printToLog(it.second, deep+1, os);
-      }
-   }
-
-   boost::property_tree::ptree::path_type CDataContainer::generatePath(const std::string & parameterName, const char pathChar) const
-   {
-      return boost::property_tree::ptree::path_type(parameterName, pathChar);
+      std::string path = "/";
+      std::string pathCarStl = "";
+      pathCarStl += pathChar;
+      path += boost::replace_all_copy(parameterName, pathCarStl, "/");
+      return path;
    }
 
    void CDataContainer::set(const char* parameterName, const char* value, const char pathChar)
@@ -245,10 +243,6 @@ namespace shared
       set<std::string>(strParamName, strValue, pathChar);
    }
 
-   std::string CDataContainer::getKey() const
-   {
-      return m_tree.front().first;
-   }
 
    void CDataContainer::set(const std::string & parameterName, const char* value, const char pathChar)
    {
@@ -264,17 +258,51 @@ namespace shared
    std::map<std::string, std::string> CDataContainer::getAsMap(const std::string& parameterName, const char pathChar) const
    {
       std::map<std::string, std::string> result;
-      for (const auto i : m_tree.get_child(generatePath(parameterName, pathChar)))
-         result[i.first] = i.second.data();
+
+      rapidjson::Value* found = findValue(parameterName, pathChar);
+      if (found)
+      {
+         for (rapidjson::Value::ConstMemberIterator i = found->MemberBegin(); i != found->MemberEnd(); ++i)
+         {
+            result[i->name.GetString()] = i->value.GetString();
+         }
+      }
+
       return result;
    }
 
    std::vector<std::string> CDataContainer::getKeys(const std::string& parameterName, const char pathChar) const
    {
       std::vector<std::string> result;
-      for (const auto& i : m_tree.get_child(generatePath(parameterName, pathChar)))
-         result.push_back(i.first);
+      rapidjson::Value* found = findValue(parameterName, pathChar);
+      if (found)
+      {
+         for (rapidjson::Value::ConstMemberIterator i = found->MemberBegin(); i != found->MemberEnd(); ++i)
+         {
+            result.push_back(i->name.GetString());
+         }
+      }
       return result;
+   }
+
+   rapidjson::Value* CDataContainer::findValue(const std::string& parameterName, const char pathChar) const
+   {
+      if (parameterName.empty())
+      {
+         return (rapidjson::Document *)&m_tree;
+      }
+         
+
+      std::string path = generatePath(parameterName, pathChar);
+      return (rapidjson::Value*)rapidjson::Pointer(path.c_str()).Get(m_tree);
+      /*
+      if (m_tree.HasMember(parameterName))
+      {
+         return (rapidjson::Value*)&(m_tree.FindMember(parameterName)->value);
+      }
+
+      std::string path = generatePath(parameterName, pathChar);
+      return (rapidjson::Value*)rapidjson::Pointer(path.c_str()).Get(m_tree);*/
    }
 
    CDataContainer CDataContainer::find(const std::string& parameterName, boost::function<bool(const CDataContainer&)> whereFct, const char pathChar) const
@@ -292,6 +320,64 @@ namespace shared
       }
       throw exception::CEmptyResult("No parameter matches criteria");
    }
+   /*
+   void CDataContainer::setBool(const std::string &parameterName, bool value)
+   {
+      auto & a = m_tree.GetAllocator();
+      rapidjson::Value name(parameterName, a);
+      m_tree.AddMember(name, value, a);
+   }
+
+   void CDataContainer::setNull(const std::string &parameterName)
+   {
+      auto & a = m_tree.GetAllocator();
+      rapidjson::Value name(parameterName, a);
+      rapidjson::Value v(rapidjson::kNullType);
+      m_tree.AddMember(name, v, a);
+   }
+
+   void CDataContainer::setArray(const std::string &parameterName)
+   {
+      auto & a = m_tree.GetAllocator();
+      rapidjson::Value v(rapidjson::kArrayType);
+      rapidjson::Value name(parameterName, a);
+      m_tree.AddMember(name, v, a);
+
+   }
+
+   void CDataContainer::setInt(const std::string &parameterName, int value)
+   {
+      auto & a = m_tree.GetAllocator();
+      rapidjson::Value name(parameterName, a);
+      m_tree.AddMember(name, value, a);
+   }
+   void CDataContainer::setInt64(const std::string &parameterName, int64_t value)
+   {
+      auto & a = m_tree.GetAllocator();
+      rapidjson::Value name(parameterName, a);
+      m_tree.AddMember(name, value, a);
+   }
+   void CDataContainer::setFloat(const std::string &parameterName, float value)
+   {
+      auto & a = m_tree.GetAllocator();
+      rapidjson::Value name(parameterName, a);
+      m_tree.AddMember(name, value, a);
+   }
+   void CDataContainer::setDouble(const std::string &parameterName, double value)
+   {
+      auto & a = m_tree.GetAllocator();
+      rapidjson::Value name(parameterName, a);
+      m_tree.AddMember(name, value, a);
+   }
+   void CDataContainer::setString(const std::string &parameterName, const std::string & value)
+   {
+      auto & a = m_tree.GetAllocator();
+      rapidjson::Value v(rapidjson::kStringType);
+      v.SetString(value, a);
+      rapidjson::Value name(parameterName, a);
+      m_tree.AddMember(name, v, a);
+   }*/
+
 
 
 } // namespace shared
