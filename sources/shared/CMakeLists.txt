@@ -283,6 +283,44 @@ set(SHARED_LIB_SRC
    shared/process/YadomsSubModuleLogConfiguration.h
    shared/process/YadomsSubModuleLogConfiguration.cpp
 
+   shared/rapidjson/allocators.h
+   shared/rapidjson/cursorstreamwrapper.h
+   shared/rapidjson/document.h
+   shared/rapidjson/encodedstream.h
+   shared/rapidjson/encodings.h
+   shared/rapidjson/filereadstream.h
+   shared/rapidjson/filewritestream.h
+   shared/rapidjson/fwd.h
+   shared/rapidjson/istreamwrapper.h
+   shared/rapidjson/memorybuffer.h
+   shared/rapidjson/memorystream.h
+   shared/rapidjson/ostreamwrapper.h
+   shared/rapidjson/pointer.h
+   shared/rapidjson/prettywriter.h
+   shared/rapidjson/rapidjson.h
+   shared/rapidjson/reader.h
+   shared/rapidjson/schema.h
+   shared/rapidjson/stream.h
+   shared/rapidjson/stringbuffer.h
+   shared/rapidjson/writer.h
+   
+   shared/rapidjson/error/en.h
+   shared/rapidjson/error/error.h
+   shared/rapidjson/internal/biginteger.h
+   shared/rapidjson/internal/diyfp.h
+   shared/rapidjson/internal/dtoa.h
+   shared/rapidjson/internal/ieee754.h
+   shared/rapidjson/internal/itoa.h
+   shared/rapidjson/internal/meta.h
+   shared/rapidjson/internal/pow10.h
+   shared/rapidjson/internal/regex.h
+   shared/rapidjson/internal/stack.h
+   shared/rapidjson/internal/strfunc.h
+   shared/rapidjson/internal/strtod.h
+   shared/rapidjson/internal/swap.h
+   shared/rapidjson/msinttypes/inttypes.h
+   shared/rapidjson/msinttypes/stdint.h
+   
    shared/serialization/IDataSerializable.h
    shared/serialization/IDataFileSerializable.h
 
