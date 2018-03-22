@@ -150,12 +150,12 @@ BOOST_AUTO_TEST_SUITE(TestOrangeBusiness)
       CDecoder decoder;
       shared::CDataContainer response = decoder.getLastData(messageRecu);
 
-      BOOST_CHECK_EQUAL(response.get<std::string>("id") == "58e276370cf2cabaf8221840", true);
-      BOOST_CHECK_EQUAL(response.get<std::string>("payload") == "03000000000004", true);
-      BOOST_CHECK_EQUAL(response.get<std::string>("timestamp") == "2017-04-03T16:20:07.513Z", true);
-      BOOST_CHECK_EQUAL(response.get<int>("signalLevel"), 5);
-      BOOST_CHECK_EQUAL(response.get<double>("rssi"), -92);
-      BOOST_CHECK_EQUAL(response.get<double>("snr"), 13);
+      BOOST_CHECK_EQUAL(response.getString("id") == "58e276370cf2cabaf8221840", true);
+      BOOST_CHECK_EQUAL(response.getString("payload") == "03000000000004", true);
+      BOOST_CHECK_EQUAL(response.getString("timestamp") == "2017-04-03T16:20:07.513Z", true);
+      BOOST_CHECK_EQUAL(response.getInt("signalLevel"), 5);
+      BOOST_CHECK_EQUAL(response.getDouble("rssi"), -92);
+      BOOST_CHECK_EQUAL(response.getDouble("snr"), 13);
    }
 
 BOOST_AUTO_TEST_SUITE_END()

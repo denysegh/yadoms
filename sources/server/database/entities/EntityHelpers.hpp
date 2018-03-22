@@ -176,9 +176,7 @@
 
 
 
-
-
-
+#define ENTITY_FILED_GETTER(elem) BOOST_PP_IF(BOOST_PP_EQUAL(BOOST_PP_STRINGIZE(ENTITY_FIELD_TYPE(elem)), "bool"), getBool, plouf)
 
 
 
@@ -188,7 +186,7 @@
 //-------------------------------------------------------
 #define DECLARE_ENTITY_FILL_FIELD_CONTENT(r, _classname, elem)                                                                                                    \
     if(initialData.exists(ENTITY_FIELD_SERIALIZATION_IDENTIFIER(elem)))                                                                                         \
-      ENTITY_FIELD_NAME(elem) = initialData.get< ENTITY_FIELD_TYPE(elem) >(ENTITY_FIELD_SERIALIZATION_IDENTIFIER(elem));
+      ENTITY_FIELD_NAME(elem) = initialData.getGeneric< ENTITY_FIELD_TYPE(elem) >(ENTITY_FIELD_SERIALIZATION_IDENTIFIER(elem));
 
 
 
@@ -215,7 +213,7 @@
 ///\brief   Declare the JSON serializer for one field IMPLEMENTATION  when the content is treated as a child
 //-------------------------------------------------------
 #define DECLARE_ENTITY_EXTRACT_FIELD_CONTENT(r, _classname, elem)                                                                                              \
-   containerToFill.set< ENTITY_FIELD_TYPE(elem) >( ENTITY_FIELD_SERIALIZATION_IDENTIFIER(elem), ENTITY_FIELD_NAME(elem)());
+   containerToFill.set( ENTITY_FIELD_SERIALIZATION_IDENTIFIER(elem), ENTITY_FIELD_NAME(elem)());
 
 
 //-------------------------------------------------------

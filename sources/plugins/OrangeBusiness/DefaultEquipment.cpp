@@ -69,7 +69,7 @@ namespace equipments
 
    std::string CDefaultEquipment::getlastMessageId(boost::shared_ptr<yApi::IYPluginApi> api)
    {
-      return api->getDeviceDetails(m_name).get<std::string>("id");
+      return api->getDeviceDetails(m_name).getString("id");
    }
 
    void CDefaultEquipment::updateData(boost::shared_ptr<yApi::IYPluginApi> api,

@@ -44,7 +44,7 @@ namespace shared
             /// \param [in] parameterName    Name of the parameter
             /// \return     true if parameter found
             //--------------------------------------------------------------
-            bool exists(const std::string& parameterName) const
+            bool exists(const std::string& parameterName)
             {
                return m_configurationData.exists(parameterName);
             }
@@ -56,20 +56,117 @@ namespace shared
             /// a default value in the package.json file of plugin.
             /// \throw      shared::exception::CInvalidParameter if parameter is not found
             //--------------------------------------------------------------
-            template <typename T>
-            inline T get(const std::string& parameterName) const
+            bool getBool(const std::string &parameterName) const
             {
                try
                {
-                  return m_configurationData.get<T>(parameterName);
+                  return m_configurationData.getBool(parameterName);
                }
                catch (shared::exception::CInvalidParameter&)
                {
                   // Not found in configuration            
                }
 
-               return m_packageData.get<T>(std::string("configurationSchema.") + parameterName + (".defaultValue"));
+               return m_packageData.getBool(std::string("configurationSchema.") + parameterName + (".defaultValue"));
             }
+
+            int getInt(const std::string &parameterName) const
+            {
+               try
+               {
+                  return m_configurationData.getInt(parameterName);
+               }
+               catch (shared::exception::CInvalidParameter&)
+               {
+                  // Not found in configuration            
+               }
+
+               return m_packageData.getInt(std::string("configurationSchema.") + parameterName + (".defaultValue"));
+            }
+            int64_t getInt64(const std::string &parameterName) const
+            {
+               try
+               {
+                  return m_configurationData.getInt64(parameterName);
+               }
+               catch (shared::exception::CInvalidParameter&)
+               {
+                  // Not found in configuration            
+               }
+
+               return m_packageData.getInt64(std::string("configurationSchema.") + parameterName + (".defaultValue"));
+            }    
+            
+            unsigned int getUInt(const std::string &parameterName) const
+            {
+               try
+               {
+                  return m_configurationData.getUInt(parameterName);
+               }
+               catch (shared::exception::CInvalidParameter&)
+               {
+                  // Not found in configuration            
+               }
+
+               return m_packageData.getUInt(std::string("configurationSchema.") + parameterName + (".defaultValue"));
+            }        
+            
+            uint64_t getUInt64(const std::string &parameterName) const
+            {
+               try
+               {
+                  return m_configurationData.getUInt64(parameterName);
+               }
+               catch (shared::exception::CInvalidParameter&)
+               {
+                  // Not found in configuration            
+               }
+
+               return m_packageData.getUInt64(std::string("configurationSchema.") + parameterName + (".defaultValue"));
+            }
+
+            float getFloat(const std::string &parameterName) const
+            {
+               try
+               {
+                  return m_configurationData.getFloat(parameterName);
+               }
+               catch (shared::exception::CInvalidParameter&)
+               {
+                  // Not found in configuration            
+               }
+
+               return m_packageData.getFloat(std::string("configurationSchema.") + parameterName + (".defaultValue"));
+            }
+
+            double getDouble(const std::string &parameterName) const
+            {
+               try
+               {
+                  return m_configurationData.getDouble(parameterName);
+               }
+               catch (shared::exception::CInvalidParameter&)
+               {
+                  // Not found in configuration            
+               }
+
+               return m_packageData.getDouble(std::string("configurationSchema.") + parameterName + (".defaultValue"));
+            }
+
+            std::string getString(const std::string &parameterName) const
+            {
+               try
+               {
+                  return m_configurationData.getString(parameterName);
+               }
+               catch (shared::exception::CInvalidParameter&)
+               {
+                  // Not found in configuration            
+               }
+
+               return m_packageData.getString(std::string("configurationSchema.") + parameterName + (".defaultValue"));
+            }
+
 
             //--------------------------------------------------------------
             /// \brief	    Get a enum value from configuration
@@ -84,14 +181,14 @@ namespace shared
             {
                try
                {
-                  return m_configurationData.getEnumValue<EnumType>(parameterName, valuesNames);
+                  return static_cast<EnumType>(m_configurationData.getEnumValue(parameterName, valuesNames));
                }
                catch (shared::exception::CInvalidParameter&)
                {
                   // Not found in configuration            
                }
 
-               return m_packageData.getEnumValue<EnumType>(std::string("configurationSchema.") + parameterName + (".defaultValue"), valuesNames);
+               return static_cast<EnumType>(m_packageData.getEnumValue(std::string("configurationSchema.") + parameterName + (".defaultValue"), valuesNames));
             }
 
          private:

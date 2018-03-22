@@ -23,9 +23,9 @@ namespace shared
             CMessageFormatter::CMessageFormatter(const std::string& yadomsCommand)
             {
                CDataContainer command(yadomsCommand);
-               m_from = command.exists("from") ? command.get<int>("from") : 0;
-               m_to = command.exists("to") ? command.get<int>("to") : 0;
-               m_body = command.exists("body") ? command.get<std::string>("body") : std::string();
+               m_from = command.getIntWithDefault("from", 0);
+               m_to = command.getIntWithDefault("to", 0);
+               m_body = command.getStringWithDefault("body", "");
             }
 
             CMessageFormatter::~CMessageFormatter()

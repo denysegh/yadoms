@@ -17,9 +17,9 @@ namespace tools
 
    bool CSupportedPlatformsChecker::isSupported(const shared::CDataContainer& supportedPlatformsNode)
    {
-      if (supportedPlatformsNode.containsValue())
+      if (supportedPlatformsNode.containsValue(""))
       {
-         if (supportedPlatformsNode.get<std::string>() == "all")
+         if (supportedPlatformsNode.getString("") == "all")
             return true;
 
          throw shared::exception::CInvalidParameter("Error reading package.json : supported platforms is invalid");
@@ -28,12 +28,12 @@ namespace tools
       if (supportedPlatformsNode.exists(COperatingSystem::getName()))
       {
          // Our current platform is explicitly given in the configuration
-         const shared::CDataContainer& value = supportedPlatformsNode.get<shared::CDataContainer>(COperatingSystem::getName());
-         if (!value.containsValue())
+         const shared::CDataContainer& value = supportedPlatformsNode.getChild(COperatingSystem::getName());
+         if (!value.containsValue(""))
             return isVersionSupported(value);
-         if (value.get<std::string>() == "supported")
+         if (value.getString("") == "supported")
             return true;
-         if (value.get<std::string>() == "unsupported")
+         if (value.getString("") == "unsupported")
             return false;
 
          throw shared::exception::CInvalidParameter("Error reading package.json : supported platforms is invalid");
@@ -43,7 +43,7 @@ namespace tools
       if (supportedPlatformsNode.exists("others"))
       {
          // Our current platform is explicitly given in the configuration
-         const std::string& value = supportedPlatformsNode.get<std::string>("others");
+         const std::string& value = supportedPlatformsNode.getString("others");
          if (value == "supported")
             return true;
          if (value == "unsupported")
@@ -59,13 +59,13 @@ namespace tools
    {
       if (supportedPlatformsVersionNode.exists("from"))
       {
-         shared::versioning::CVersion fromVersion(supportedPlatformsVersionNode.get<std::string>("from"));
+         shared::versioning::CVersion fromVersion(supportedPlatformsVersionNode.getString("from"));
          return COperatingSystem::getVersion() >= fromVersion;
       }
 
       if (supportedPlatformsVersionNode.exists("to"))
       {
-         shared::versioning::CVersion toVersion(supportedPlatformsVersionNode.get<std::string>("to"));
+         shared::versioning::CVersion toVersion(supportedPlatformsVersionNode.getString("to"));
          return COperatingSystem::getVersion() <= toVersion;
       }
 

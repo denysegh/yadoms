@@ -17,7 +17,7 @@ CEquipmentManager::CEquipmentManager(boost::shared_ptr<yApi::IYPluginApi> api)
 	{
 		try  // plugin state have no type
 		{
-         std::string devEUI = api->getDeviceDetails(device).get<std::string>("devEUI");
+         std::string devEUI = api->getDeviceDetails(device).getStringWithDefault("devEUI", "");
 
          if (devEUI != "") // Create the device 
             m_deviceList.insert(std::pair<std::string, boost::shared_ptr<equipments::IEquipment>>(device, boost::make_shared<equipments::CDefaultEquipment>(device, devEUI)));
@@ -55,7 +55,7 @@ void CEquipmentManager::refreshEquipment(boost::shared_ptr<yApi::IYPluginApi> ap
       // reading of the battery level
       shared::CDataContainer response = frameManager->getDeviceInformation(apikey, equipment->getEUI());
       response.printToLog(YADOMS_LOG(trace));
-      std::string receivedTimeString = response.get<std::string>("updateTs");
+      std::string receivedTimeString = response.getString("updateTs");
       boost::remove_erase_if(receivedTimeString, boost::is_any_of("Z-:."));
       boost::posix_time::ptime receivedTime = boost::posix_time::from_iso_string(receivedTimeString);
 
@@ -66,7 +66,7 @@ void CEquipmentManager::refreshEquipment(boost::shared_ptr<yApi::IYPluginApi> ap
       try {
          if (elapseTimeSinceLastBatteryMessage >= maxTimeForBatteryHistorization)
          {
-            equipment->updateBatteryLevel(api, response.get<int>("lastBatteryLevel"));
+            equipment->updateBatteryLevel(api, response.getInt("lastBatteryLevel"));
          }
       }
       catch (std::exception &)
@@ -92,7 +92,7 @@ void CEquipmentManager::refreshEquipment(boost::shared_ptr<yApi::IYPluginApi> ap
       shared::CDataContainer lastData = decoder->getLastData(response);
       response.printToLog(YADOMS_LOG(trace));
 
-      std::string idNewMessage = lastData.getWithDefault<std::string>("id", "");
+      std::string idNewMessage = lastData.getStringWithDefault("id", "");
       std::string idlastMessage = equipment->getlastMessageId(api);
 
       // Register the new data, only if it's a new id
@@ -100,10 +100,10 @@ void CEquipmentManager::refreshEquipment(boost::shared_ptr<yApi::IYPluginApi> ap
       if (idNewMessage != idlastMessage)
       {
          equipment->updateData(api, 
-                               lastData.get<std::string>("payload"),
-                               lastData.get<double>("rssi"),
-                               lastData.get<int>("signalLevel"),
-                               lastData.get<double>("snr"));
+                               lastData.getString("payload"),
+                               lastData.getDouble("rssi"),
+                               lastData.getInt("signalLevel"),
+                               lastData.getDouble("snr"));
          equipment->updatelastMessageId(api, idNewMessage);
       }
    }

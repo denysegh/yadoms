@@ -34,55 +34,47 @@ BOOST_AUTO_TEST_SUITE(TestDataContainer)
       BOOST_CHECK_EQUAL(dc.empty(), true) ;
 
       //insert all simple data
-      dc.set<bool>("BoolParameter", true);
-      dc.set<double>("DecimalParameter", 18.4);
-      dc.set<EEnumType>("EnumParameter", kEnumValue2);
-      dc.set<std::string>("EnumAsStringParameter", "EnumValue1");
-      dc.set<int>("IntParameter", 42);
-      dc.set<std::string>("Serial port", "tty0");
-      dc.set<std::string>("StringParameter", "Yadoms is so powerful !");
-      dc.set<int>("MySection.SubIntParameter", 123);
-      dc.set<std::string>("MySection.SubStringParameter", "Just a string parameter in the sub-section");
-      dc.set<boost::posix_time::ptime>("DateTimeParameter", actualDatetime);
+      dc.set("BoolParameter", true);
+      dc.set("DecimalParameter", 18.4);
+      dc.set("EnumParameter", kEnumValue2);
+      dc.set("EnumAsStringParameter", "EnumValue1");
+      dc.set("IntParameter", 42);
+      dc.set("Serial port", "tty0");
+      dc.set("StringParameter", "Yadoms is so powerful !");
+      dc.set("MySection.SubIntParameter", 123);
+      dc.set("MySection.SubStringParameter", "Just a string parameter in the sub-section");
+      dc.set("DateTimeParameter", actualDatetime);
 
       //check data are correctly retreived
-      BOOST_CHECK_EQUAL(dc.get<bool>("BoolParameter"), true) ;
-      BOOST_CHECK_EQUAL(dc.get<double>("DecimalParameter"), 18.4) ;
-      BOOST_CHECK_EQUAL(dc.get<EEnumType>("EnumParameter"), kEnumValue2) ;
-      BOOST_CHECK_EQUAL(dc.getEnumValue<EEnumType>("EnumAsStringParameter", EEnumTypeNames), kEnumValue1) ;
-      BOOST_CHECK_EQUAL(dc.get<int>("IntParameter"), 42) ;
-      BOOST_CHECK_EQUAL(dc.get<std::string>("Serial port"), "tty0") ;
-      BOOST_CHECK_EQUAL(dc.get<std::string>("StringParameter"), "Yadoms is so powerful !") ;
-      BOOST_CHECK_EQUAL(dc.get<int>("MySection.SubIntParameter"), 123) ;
-      BOOST_CHECK_EQUAL(dc.get<std::string>("MySection.SubStringParameter"), "Just a string parameter in the sub-section") ;
-      BOOST_CHECK_EQUAL(dc.get<boost::posix_time::ptime>("DateTimeParameter"), actualDatetime) ;
+      BOOST_CHECK_EQUAL(dc.getBool("BoolParameter"), true) ;
+      BOOST_CHECK_EQUAL(dc.getDouble("DecimalParameter"), 18.4) ;
+      BOOST_CHECK_EQUAL(static_cast<EEnumType>(dc.getInt("EnumParameter")), kEnumValue2) ;
+      BOOST_CHECK_EQUAL(static_cast<EEnumType>(dc.getEnumValue("EnumAsStringParameter", EEnumTypeNames)), kEnumValue1) ;
+      BOOST_CHECK_EQUAL(dc.getInt("IntParameter"), 42) ;
+      BOOST_CHECK_EQUAL(dc.getString("Serial port"), "tty0") ;
+      BOOST_CHECK_EQUAL(dc.getString("StringParameter"), "Yadoms is so powerful !") ;
+      BOOST_CHECK_EQUAL(dc.getInt("MySection.SubIntParameter"), 123) ;
+      BOOST_CHECK_EQUAL(dc.getString("MySection.SubStringParameter"), "Just a string parameter in the sub-section") ;
+      BOOST_CHECK_EQUAL(dc.getBoostPTime("DateTimeParameter"), actualDatetime) ;
 
       //another test for a sub container
       shared::CDataContainer test;
-      test.set<int>("int", 5);
-      test.set<double>("double", 4.0);
-      test.set<std::string>("string", "plouf");
+      test.set("int", 5);
+      test.set("double", 4.0);
+      test.set("string", "plouf");
 
-      BOOST_CHECK_EQUAL(test.get<int>("int"), 5) ;
-      BOOST_CHECK_EQUAL(test.get<double>("double"),4.0) ;
-      BOOST_CHECK_EQUAL(test.get<std::string>("string"), "plouf") ;
+      BOOST_CHECK_EQUAL(test.getInt("int"), 5) ;
+      BOOST_CHECK_EQUAL(test.getDouble("double"),4.0) ;
+      BOOST_CHECK_EQUAL(test.getString("string"), "plouf") ;
 
       shared::CDataContainer subContainer;
-      subContainer.set<int>("int4", 6);
-      subContainer.set<double>("double1", 8.0);
-      subContainer.set<std::string>("string2", "plouf2");
+      subContainer.set("int4", 6);
+      subContainer.set("double1", 8.0);
+      subContainer.set("string2", "plouf2");
 
       test.set("config1", subContainer);
 
-      BOOST_CHECK_EQUAL(test.get<double>("config1.double1"), 8.0) ;
-
-
-      //check for shared_ptr
-      auto shs(boost::make_shared<std::string>("un shared ptr"));
-      dc.set("StringSharedPtr", shs);
-
-      auto shs2 = dc.get<boost::shared_ptr<std::string>>("StringSharedPtr");
-      BOOST_CHECK_EQUAL(*(shs.get()) == *(shs2.get()), true) ;
+      BOOST_CHECK_EQUAL(test.getDouble("config1.double1"), 8.0) ;
    }
 
    BOOST_AUTO_TEST_CASE(CollectionContainer)
@@ -93,57 +85,31 @@ BOOST_AUTO_TEST_SUITE(TestDataContainer)
       std::vector<int> vi;
       for (auto i = 0; i < 10; ++i)
          vi.push_back(i);
-      test.set<std::vector<int>>("vectorint", vi);
-      auto vi2 = test.get<std::vector<int>>("vectorint");
+      test.set("vectorint", vi);
+      std::vector<int> vi2;
+      test.getChilds("vectorint", vi2);
       BOOST_CHECK_EQUAL_COLLECTIONS(vi.begin(), vi.end(), vi2.begin(), vi2.end()) ;
 
       //check vector of double
       std::vector<double> vd;
       for (auto i = 0; i < 10; ++i)
          vd.push_back(i * 3.0);
-      test.set<std::vector<double>>("vectordouble", vd);
-      auto vd2 = test.get<std::vector<double>>("vectordouble");
+      test.set("vectordouble", vd);
+      std::vector<double> vd2;
+      test.getChilds("vectordouble", vd2);
       BOOST_CHECK_EQUAL_COLLECTIONS(vd.begin(), vd.end(), vd2.begin(), vd2.end()) ;
 
       //check vector of EEnumType
-      std::vector<EEnumType> ve;
+      std::vector<int> ve;
       ve.push_back(kEnumValue2);
       ve.push_back(kEnumValue4);
       ve.push_back(kEnumValue5);
       ve.push_back(kEnumValue7);
       test.set("vectorenum", ve);
-      std::vector<EEnumType> ve2 = test.get<std::vector<EEnumType>>("vectorenum");
+
+      std::vector<int> ve2;
+      test.getChilds("vectorenum", ve2);
       BOOST_CHECK_EQUAL_COLLECTIONS(ve.begin(), ve.end(), ve2.begin(), ve2.end()) ;
-
-      //check vector of shared_ptr<int>
-      std::vector<boost::shared_ptr<int>> vish;
-      for (auto i = 0; i < 10; ++i)
-         vish.push_back(boost::make_shared<int>(i));
-      test.set("vectorintsh", vish);
-      auto vish2 = test.get<std::vector<boost::shared_ptr<int>>>("vectorintsh");
-      auto vish2bis = test.get<std::vector<int>>("vectorintsh");
-      BOOST_CHECK_EQUAL(vish.size(), vish2.size()) ;
-      for (unsigned int i = 0; i < vish.size(); ++i)
-         BOOST_CHECK_EQUAL(*(vish[i].get()) == *(vish2[i].get()), true) ;
-
-      BOOST_CHECK_EQUAL(vish.size(), vish2bis.size()) ;
-      for (unsigned int i = 0; i < vish.size(); ++i)
-         BOOST_CHECK_EQUAL(*(vish[i].get()) == vish2bis[i], true) ;
-
-      //check vector of shared_ptr<double>
-      std::vector<boost::shared_ptr<double>> vdsh;
-      for (unsigned int i = 0; i < 10; ++i)
-         vdsh.push_back(boost::make_shared<double>(i * 42.0));
-      test.set("vectordoublesh", vdsh);
-      auto vdsh2 = test.get<std::vector<boost::shared_ptr<double>>>("vectordoublesh");
-      auto vdsh2bis = test.get<std::vector<double>>("vectordoublesh");
-      BOOST_CHECK_EQUAL(vdsh.size(), vdsh2.size()) ;
-      for (unsigned int i = 0; i < vdsh.size(); ++i)
-         BOOST_CHECK_EQUAL(*(vdsh[i].get()) == *(vdsh2[i].get()), true) ;
-
-      BOOST_CHECK_EQUAL(vdsh.size(), vdsh2bis.size()) ;
-      for (unsigned int i = 0; i < vdsh.size(); ++i)
-         BOOST_CHECK_EQUAL(*(vdsh[i].get()) == vdsh2bis[i], true) ;
 
       //check vector of CDataContainer
 
@@ -169,7 +135,8 @@ BOOST_AUTO_TEST_SUITE(TestDataContainer)
       conditions.set("and", allconditions);
 
       //do checks
-      auto getAllCond = conditions.get<std::vector<shared::CDataContainer>>("and");
+      std::vector<shared::CDataContainer> getAllCond;
+      conditions.getChilds("and", getAllCond);
 
       BOOST_CHECK_EQUAL(allconditions.size(), getAllCond.size()) ;
 
@@ -203,19 +170,19 @@ BOOST_AUTO_TEST_SUITE(TestDataContainer)
 
       shared::CDataContainer cfg(defaultConf);
 
-      BOOST_CHECK_EQUAL(cfg.get<bool>("BoolParameter"), true) ;
-      BOOST_CHECK_EQUAL(cfg.get<double>("DecimalParameter"), 18.4) ;
-      BOOST_CHECK_EQUAL(cfg.get<int>("IntParameter"), 42) ;
-      BOOST_CHECK_EQUAL(cfg.get<EEnumType>("EnumParameter"), kEnumValue2) ;
-      BOOST_CHECK_EQUAL(cfg.getEnumValue<EEnumType>("EnumAsStringParameter", EEnumTypeNames), kEnumValue1) ;
-      BOOST_CHECK_EQUAL(cfg.get<std::string>("Serial port"), "tty0") ;
-      BOOST_CHECK_EQUAL(cfg.get<std::string>("StringParameter"), "Yadoms is so powerful !") ;
-      BOOST_CHECK_EQUAL(cfg.get<int>("MySection.SubIntParameter"), 123) ;
-      BOOST_CHECK_EQUAL(cfg.get<std::string>("MySection.SubStringParameter"), "Just a string parameter in the sub-section") ;
+      BOOST_CHECK_EQUAL(cfg.getBool("BoolParameter"), true) ;
+      BOOST_CHECK_EQUAL(cfg.getDouble("DecimalParameter"), 18.4) ;
+      BOOST_CHECK_EQUAL(cfg.getInt("IntParameter"), 42) ;
+      BOOST_CHECK_EQUAL(cfg.getInt("EnumParameter"), kEnumValue2) ;
+      BOOST_CHECK_EQUAL(cfg.getEnumValue("EnumAsStringParameter", EEnumTypeNames), kEnumValue1) ;
+      BOOST_CHECK_EQUAL(cfg.getString("Serial port"), "tty0") ;
+      BOOST_CHECK_EQUAL(cfg.getString("StringParameter"), "Yadoms is so powerful !") ;
+      BOOST_CHECK_EQUAL(cfg.getInt("MySection.SubIntParameter"), 123) ;
+      BOOST_CHECK_EQUAL(cfg.getString("MySection.SubStringParameter"), "Just a string parameter in the sub-section") ;
 
       boost::posix_time::ptime expected(boost::gregorian::date(2014, 7, 2),
                                         boost::posix_time::hours(11) + boost::posix_time::minutes(35) + boost::posix_time::seconds(0));
-      BOOST_CHECK_EQUAL(cfg.get<boost::posix_time::ptime>("DateTimeParameter"), expected) ;
+      BOOST_CHECK_EQUAL(cfg.getBoostPTime("DateTimeParameter"), expected) ;
 
       //check that serialization match original values
       //just remove space, \n, \t and \r from strings
@@ -239,6 +206,120 @@ BOOST_AUTO_TEST_SUITE(TestDataContainer)
       //YADOMS_LOG(information) << cfg;
    }
 
+   BOOST_AUTO_TEST_CASE(ConvertTypes)
+   {
+      const std::string defaultConf("{"
+         "\"bool1\": true,"
+         "\"bool2\": false,"
+         "\"bool3\": \"true\","
+         "\"bool4\": \"false\","
+         "\"bool5\": \"1\","
+         "\"bool6\": \"1.025\","
+         "\"bool7\": \"0.42\","
+         "\"bool8\": 1,"
+         "\"bool9\": 1.025,"
+         "\"bool10\": 0.42,"
+         "\"int1\": 42,"
+         "\"int2\": \"42\","
+         "\"int3\": 42.0,"
+         "\"int4\": \"42.0\","
+         "\"int5\": 42.98,"
+         "\"int6\": \"42.98\","
+         "\"int7\": -42,"
+         "\"int8\": \"-42\","
+         "\"int9\": 2147483647,"
+         "\"int10\": -2147483648,"      
+         "\"uint1\": 42,"
+         "\"uint2\": \"42\","
+         "\"uint3\": 42.0,"
+         "\"uint4\": \"42.0\","
+         "\"uint5\": 42.98,"
+         "\"uint6\": \"42.98\","
+         "\"uint7\": -42,"
+         "\"uint8\": \"-42\","
+         "\"uint9\": 4294967295,"
+         "\"int64_1\": 42,"
+         "\"int64_2\": \"42\","
+         "\"int64_3\": 42.0,"
+         "\"int64_4\": \"42.0\","
+         "\"int64_5\": 42.98,"
+         "\"int64_6\": \"42.98\","
+         "\"int64_7\": -42,"
+         "\"int64_8\": \"-42\","
+         "\"int64_9\": 9223372036854775807,"
+         "\"int64_10\": -9223372036854775808,"
+         "\"uint64_1\": 42,"
+         "\"uint64_2\": \"42\","
+         "\"uint64_3\": 42.0,"
+         "\"uint64_4\": \"42.0\","
+         "\"uint64_5\": 42.98,"
+         "\"uint64_6\": \"42.98\","
+         "\"uint64_7\": -42,"
+         "\"uint64_8\": \"-42\","
+         "\"uint64_9\": 18446744073709551615"
+         "}");
+
+      shared::CDataContainer cfg(defaultConf);
+
+      BOOST_CHECK_EQUAL(cfg.getBool("bool1"), true);
+      BOOST_CHECK_EQUAL(cfg.getBool("bool2"), false);
+      BOOST_CHECK_EQUAL(cfg.getBool("bool3"), true);
+      BOOST_CHECK_EQUAL(cfg.getBool("bool4"), false);
+      BOOST_CHECK_EQUAL(cfg.getBool("bool5"), true);
+      BOOST_CHECK_EQUAL(cfg.getBool("bool6"), false);
+      BOOST_CHECK_EQUAL(cfg.getBool("bool7"), false);
+      BOOST_CHECK_EQUAL(cfg.getBool("bool8"), true);
+      BOOST_CHECK_EQUAL(cfg.getBool("bool9"), false);
+      BOOST_CHECK_EQUAL(cfg.getBool("bool10"), false);
+
+      int intmax = 2147483647;
+      int intmin = -((int)2147483648);
+      BOOST_CHECK_EQUAL(cfg.getInt("int1"), 42);
+      BOOST_CHECK_EQUAL(cfg.getInt("int2"), 42);
+      BOOST_CHECK_EQUAL(cfg.getInt("int3"), 42);
+      BOOST_CHECK_EQUAL(cfg.getInt("int4"), 42);
+      BOOST_CHECK_EQUAL(cfg.getInt("int5"), 42);
+      BOOST_CHECK_EQUAL(cfg.getInt("int6"), 42);
+      BOOST_CHECK_EQUAL(cfg.getInt("int7"), -42);
+      BOOST_CHECK_EQUAL(cfg.getInt("int8"), -42);
+      BOOST_CHECK_EQUAL(cfg.getInt("int9"), intmax);
+      BOOST_CHECK_EQUAL(cfg.getInt("int10"), intmin);
+
+      unsigned int uintmax = 4294967295;
+      unsigned int uint42 = 42;
+      BOOST_CHECK_EQUAL(cfg.getUInt("uint1"), uint42);
+      BOOST_CHECK_EQUAL(cfg.getUInt("uint2"), uint42);
+      BOOST_CHECK_EQUAL(cfg.getUInt("uint3"), uint42);
+      BOOST_CHECK_EQUAL(cfg.getUInt("uint4"), uint42);
+      BOOST_CHECK_EQUAL(cfg.getUInt("uint5"), uint42);
+      BOOST_CHECK_EQUAL(cfg.getUInt("uint6"), uint42);
+      BOOST_CHECK_EQUAL(cfg.getUInt("uint7"), uintmax - 42 + 1);
+      BOOST_CHECK_EQUAL(cfg.getUInt("uint8"), uintmax - 42 + 1);
+      BOOST_CHECK_EQUAL(cfg.getUInt("uint9"), uintmax);
+
+      int64_t int64min = -((int64_t)9223372036854775808);
+      BOOST_CHECK_EQUAL(cfg.getInt64("int64_1"), 42);
+      BOOST_CHECK_EQUAL(cfg.getInt64("int64_2"), 42);
+      BOOST_CHECK_EQUAL(cfg.getInt64("int64_3"), 42);
+      BOOST_CHECK_EQUAL(cfg.getInt64("int64_4"), 42);
+      BOOST_CHECK_EQUAL(cfg.getInt64("int64_5"), 42);
+      BOOST_CHECK_EQUAL(cfg.getInt64("int64_6"), 42);
+      BOOST_CHECK_EQUAL(cfg.getInt64("int64_7"), -42);
+      BOOST_CHECK_EQUAL(cfg.getInt64("int64_8"), -42);
+      BOOST_CHECK_EQUAL(cfg.getInt64("int64_9"), 9223372036854775807);
+      BOOST_CHECK_EQUAL(cfg.getInt64("int64_10"), int64min);
+
+      uint64_t uint64max = 18446744073709551615;
+      BOOST_CHECK_EQUAL(cfg.getUInt64("uint64_1"), 42);
+      BOOST_CHECK_EQUAL(cfg.getUInt64("uint64_2"), 42);
+      BOOST_CHECK_EQUAL(cfg.getUInt64("uint64_3"), 42);
+      BOOST_CHECK_EQUAL(cfg.getUInt64("uint64_4"), 42);
+      BOOST_CHECK_EQUAL(cfg.getUInt64("uint64_5"), 42);
+      BOOST_CHECK_EQUAL(cfg.getUInt64("uint64_6"), 42);
+      BOOST_CHECK_EQUAL(cfg.getUInt64("uint64_7"), uint64max - 42 + 1);
+      BOOST_CHECK_EQUAL(cfg.getUInt64("uint64_8"), uint64max - 42 + 1);
+      BOOST_CHECK_EQUAL(cfg.getUInt64("uint64_9"), uint64max);
+   }
 
    BOOST_AUTO_TEST_CASE(CheckExistance)
    {
@@ -298,19 +379,17 @@ BOOST_AUTO_TEST_SUITE(TestDataContainer)
 
       //subnode test
       BOOST_CHECK_EQUAL(testPf.exists("supportedPlatforms"), true) ;
-      auto supportedPf = testPf.get<shared::CDataContainer>("supportedPlatforms");
-      BOOST_CHECK_EQUAL(supportedPf.containsChild(), true) ;
-      BOOST_CHECK_EQUAL(supportedPf.containsValue(), false) ;
-      BOOST_CHECK_EQUAL(supportedPf.get<std::string>(), "") ; //it do not contains value, only childs
-      BOOST_CHECK_EQUAL(supportedPf.get<std::string>("mac"), "none") ;
-      BOOST_CHECK_EQUAL(supportedPf.get<std::string>("raspberry"), "all") ;
+      auto supportedPf = testPf.getChild("supportedPlatforms");
+      BOOST_CHECK_EQUAL(supportedPf.containsChild(""), true) ;
+      BOOST_CHECK_EQUAL(supportedPf.containsValue(""), false) ;
+      BOOST_CHECK_EQUAL(supportedPf.getString("mac"), "none") ;
+      BOOST_CHECK_EQUAL(supportedPf.getString("raspberry"), "all") ;
 
       //value test
       BOOST_CHECK_EQUAL(testPf.exists("supportedPlatforms2"), true) ;
-      auto supportedPf2 = testPf.get<shared::CDataContainer>("supportedPlatforms2");
-      BOOST_CHECK_EQUAL(supportedPf2.containsChild(), false) ;
-      BOOST_CHECK_EQUAL(supportedPf2.containsValue(), true) ;
-      BOOST_CHECK_EQUAL(supportedPf2.get<std::string>(), "all") ;
+      BOOST_CHECK_EQUAL(testPf.containsChild("supportedPlatforms2"), false) ;
+      BOOST_CHECK_EQUAL(testPf.containsValue("supportedPlatforms2"), true) ;
+      BOOST_CHECK_EQUAL(testPf.getString("supportedPlatforms2"), "all") ;
    }
 
    class CTestClass : public shared::IDataContainable
@@ -335,9 +414,9 @@ BOOST_AUTO_TEST_SUITE(TestDataContainer)
 
       void fillFromContent(const shared::CDataContainer& initialData) override
       {
-         m_aIntValue = initialData.get<int>("Value1");
-         m_dValue = initialData.get<double>("Value2");
-         m_sValue = initialData.get<std::string>("Value3");
+         m_aIntValue = initialData.getInt("Value1");
+         m_dValue = initialData.getDouble("Value2");
+         m_sValue = initialData.getString("Value3");
       }
 
       void fillFromSerializedString(const std::string& serializedData) override
@@ -373,42 +452,41 @@ BOOST_AUTO_TEST_SUITE(TestDataContainer)
       CTestClass obj(1, 42.0, "test of datacontainable");
       shared::CDataContainer cont;
       cont.set("myobject", obj);
-      auto result = cont.get<CTestClass>("myobject");
+
+      CTestClass result;
+      cont.get("myobject", result);
       BOOST_CHECK_EQUAL(obj.equals(result), true) ;
 
       //containeur de boost::shared_ptr<IDataContainable>
       auto sp(boost::make_shared<CTestClass>(2, 43.0, "string1"));
       shared::CDataContainer cont2;
-      cont2.set("myobject", sp);
-      auto result2 = cont2.get<boost::shared_ptr<CTestClass>>("myobject");
-      auto result2bis = cont2.get<CTestClass>("myobject");
-      BOOST_CHECK_EQUAL(result2->equals(*sp.get()), true) ;
-      BOOST_CHECK_EQUAL(result2bis.equals(*sp.get()), true) ;
+      auto spi = boost::dynamic_pointer_cast<shared::IDataContainable> (sp);
+      cont2.set("myobject", spi);
+      CTestClass a;
+      cont2.get("myobject", a);
+      BOOST_CHECK_EQUAL(a.equals(*sp.get()), true) ;
 
       //containeur simple de std::vector<IDataContainable>
       std::vector<CTestClass> vc;
       for (auto i = 0; i < 10; ++i)
          vc.push_back(CTestClass(i, 42.0 * i, "test of std::vector<IDataContainable>"));
       shared::CDataContainer contvec;
-      contvec.set("mycollection", vc);
-      auto vc2 = contvec.get<std::vector<CTestClass>>("mycollection");
+      for (auto i = vc.begin(); i != vc.end(); ++i)
+      {
+         contvec.push("mycollection", *i);
+      }
+
+      
+      std::vector<CTestClass> vc2;
+      std::vector<shared::CDataContainer> vc3;
+      contvec.getChilds("mycollection", vc3);
+      for (auto i = vc3.begin(); i != vc3.end(); ++i)
+      {
+         CTestClass ab;
+         ab.fillFromContent(*i);
+         vc2.push_back(ab);
+      }
       BOOST_CHECK_EQUAL_COLLECTIONS(vc.begin(), vc.end(), vc2.begin(), vc2.end()) ;
-
-      //containeur simple de std::vector< boost::shared_ptr<IDataContainable> >
-      std::vector<boost::shared_ptr<CTestClass>> vcsh;
-      for (auto i = 0; i < 10; ++i)
-         vcsh.push_back(boost::make_shared<CTestClass>(i, 42.0 * i, "test of std::vector<IDataContainable>"));
-      shared::CDataContainer contvecsh;
-      contvecsh.set("mycollectionofshared", vcsh);
-      auto vcsh2 = contvecsh.get<std::vector<boost::shared_ptr<CTestClass>>>("mycollectionofshared");
-      auto vc2bis = contvecsh.get<std::vector<CTestClass>>("mycollectionofshared");
-      BOOST_CHECK_EQUAL(vcsh.size(), vcsh2.size()) ;
-      for (unsigned int i = 0; i < vcsh.size(); ++i)
-         BOOST_CHECK_EQUAL(vcsh[i]->equals(*vcsh2[i].get()), true) ;
-
-      BOOST_CHECK_EQUAL(vcsh.size(), vc2bis.size()) ;
-      for (unsigned int i = 0; i < vcsh.size(); ++i)
-         BOOST_CHECK_EQUAL(vcsh[i]->equals(vc2bis[i]), true) ;
    }
 
 
@@ -420,7 +498,6 @@ BOOST_AUTO_TEST_SUITE(TestDataContainer)
       shared::CField<EEnumType> fe(kEnumValue2);
       shared::CField<CTestClass> fdc(CTestClass(5, 42.0, "test of datacontainble"));
 
-
       shared::CDataContainer dc;
 
       dc.set("FieldInt", fi);
@@ -430,21 +507,14 @@ BOOST_AUTO_TEST_SUITE(TestDataContainer)
       dc.set("FieldDataContainable", fdc);
 
       //check data are correctly retreived
-      BOOST_CHECK_EQUAL(dc.get<int>("FieldInt"), fi()) ;
-      BOOST_CHECK_EQUAL(dc.get<double>("FieldDouble"), fd()) ;
-      BOOST_CHECK_EQUAL(dc.get<std::string>("FieldString"), fs()) ;
-      BOOST_CHECK_EQUAL(dc.get<EEnumType>("FieldEnum"), fe()) ;
-      BOOST_CHECK_EQUAL(dc.get<CTestClass>("FieldDataContainable").equals(fdc()), true) ;
+      BOOST_CHECK_EQUAL(dc.getInt("FieldInt"), fi()) ;
+      BOOST_CHECK_EQUAL(dc.getDouble("FieldDouble"), fd()) ;
+      BOOST_CHECK_EQUAL(dc.getString("FieldString"), fs()) ;
+      BOOST_CHECK_EQUAL(static_cast<EEnumType>(dc.getInt("FieldEnum")), fe()) ;
 
-
-      //vector de field
-      std::vector<shared::CField<int>> vfi;
-      for (auto i = 0; i < 10; ++i)
-         vfi.push_back(shared::CField<int>(i));
-
-      dc.set("VectorFieldInt", vfi);
-      auto vi2 = dc.get<std::vector<int>>("VectorFieldInt");
-      BOOST_CHECK_EQUAL_COLLECTIONS(vfi.begin(), vfi.end(), vi2.begin(), vi2.end()) ;
+      CTestClass a;
+      dc.get("FieldDataContainable", a);
+      BOOST_CHECK_EQUAL(a.equals(fdc()), true) ;
    }
 
 
@@ -452,18 +522,17 @@ BOOST_AUTO_TEST_SUITE(TestDataContainer)
    {
       shared::CField<int> fi(10);
 
-      //standard path separator using '.'
       shared::CDataContainer dc;
       dc.set("secA.secB.valC", fi);
-      BOOST_CHECK_EQUAL(dc.get<int>("secA.secB.valC"), fi()) ;
-      BOOST_CHECK_EQUAL(dc.get<shared::CDataContainer>("secA").get<shared::CDataContainer>("secB").get<int>("valC"), fi()) ;
+      BOOST_CHECK_EQUAL(dc.getInt("secA.secB.valC"), fi()) ;
+      //BOOST_CHECK_EQUAL(dc.get<shared::CDataContainer>("secA").get<shared::CDataContainer>("secB").get<int>("valC"), fi()) ;
 
       //no path using separator 0x00
-      dc.set("secD.secE.valC", fi, 0x00);
+      /*dc.set("secD.secE.valC", fi, 0x00);
       BOOST_CHECK_EQUAL(dc.get<int>("secD.secE.valC", 0x00), fi()) ;
       BOOST_CHECK_EQUAL(dc.exists("secD.secE.valC"), false) ;
       BOOST_CHECK_THROW(dc.get<int>("secD.secE.valC"), std::exception) ;
-      BOOST_CHECK_THROW(dc.get<shared::CDataContainer>("secD"), std::exception) ;
+      BOOST_CHECK_THROW(dc.get<shared::CDataContainer>("secD"), std::exception) ;*/
    }
 
 
@@ -624,6 +693,9 @@ BOOST_AUTO_TEST_SUITE(TestDataContainer)
 
 
       to.mergeFrom(from);
+
+      to.printToLog();
+      expected.printToLog();
       BOOST_CHECK_EQUAL(to.serialize(), expected.serialize());
    }
 
@@ -646,13 +718,11 @@ BOOST_AUTO_TEST_SUITE(TestDataContainer)
       std::map<std::string, std::string> input = {{"key1", "value1"},{"key2", "value2"},{"key3", "value3"},{"key4", "value4"}};
       shared::CDataContainer dc(input);
 
-      auto output = dc.getAsMap();
+      std::map<std::string, std::string> output;
+      dc.getChilds("", output);
 
       //dont use BOOST_CHECK_EQUAL_COLLECTIONS because it do not builds with std::map
       BOOST_CHECK_MAPS(input, output);
-
-      auto output2 = dc.get<std::map<std::string, std::string>>();
-      BOOST_CHECK_MAPS(input, output2);
    }
 
 BOOST_AUTO_TEST_SUITE_END()

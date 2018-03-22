@@ -28,19 +28,19 @@ void CFakePluginConfiguration::trace() const
    {
       // Get simple parameters
       YADOMS_LOG(information) << "CFakePlugin::doWork, parameter 'StringParameter' is "
-         << (m_configuration.get<std::string>("StringParameter").empty() ? "empty" : m_configuration.get<std::string>("StringParameter"))
+         << (m_configuration.getString("StringParameter").empty() ? "empty" : m_configuration.getString("StringParameter"))
         ;
-      YADOMS_LOG(information) << "CFakePlugin::doWork, parameter 'BoolParameter' is " << m_configuration.get<bool>("BoolParameter");
-      YADOMS_LOG(information) << "CFakePlugin::doWork, parameter 'DecimalParameter' is " << m_configuration.get<double>("DecimalParameter");
-      YADOMS_LOG(information) << "CFakePlugin::doWork, parameter 'IntParameter' is " << m_configuration.get<int>("IntParameter");
+      YADOMS_LOG(information) << "CFakePlugin::doWork, parameter 'BoolParameter' is " << m_configuration.getBool("BoolParameter");
+      YADOMS_LOG(information) << "CFakePlugin::doWork, parameter 'DecimalParameter' is " << m_configuration.getDouble("DecimalParameter");
+      YADOMS_LOG(information) << "CFakePlugin::doWork, parameter 'IntParameter' is " << m_configuration.getInt("IntParameter");
 
       // Enum
       YADOMS_LOG(information) << "CFakePlugin::doWork, parameter 'EnumParameter' is " << getEnumParameter();
 
       // Parameters in sections
-      YADOMS_LOG(information) << "CFakePlugin::doWork, parameter 'MySection.SubIntParameter' is " << m_configuration.get<int>("MySection.content.SubIntParameter");
+      YADOMS_LOG(information) << "CFakePlugin::doWork, parameter 'MySection.SubIntParameter' is " << m_configuration.getInt("MySection.content.SubIntParameter");
       YADOMS_LOG(information) << "CFakePlugin::doWork, parameter 'MySection.SubStringParameter' is "
-         << (m_configuration.get<std::string>("MySection.content.SubStringParameter").empty() ? "empty" : m_configuration.get<std::string>("MySection.content.SubStringParameter"))
+         << (m_configuration.getString("MySection.content.SubStringParameter").empty() ? "empty" : m_configuration.getString("MySection.content.SubStringParameter"))
         ;
    }
    catch (const shared::exception::CInvalidParameter& e)

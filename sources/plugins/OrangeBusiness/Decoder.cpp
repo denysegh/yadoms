@@ -16,21 +16,23 @@ std::map<std::string, boost::shared_ptr<equipments::IEquipment>> CDecoder::decod
 	std::map<std::string, boost::shared_ptr<equipments::IEquipment>> equipmentList;
    message.printToLog(YADOMS_LOG(trace));
 
-   auto errorcode = message.getWithDefault<std::string>("code","");
+   auto errorcode = message.getStringWithDefault("code","");
 
    if (errorcode == "UNAUTHORIZED")
-      throw CUnauthorizedException(message.get<std::string>("message"));
+      throw CUnauthorizedException(message.getString("message"));
 
    if (errorcode != "")
-      throw shared::exception::CException(message.get<std::string>("message"));
+      throw shared::exception::CException(message.getString("message"));
 
-   auto equipments = message.get<std::vector<shared::CDataContainer> >("data");
+   std::vector<shared::CDataContainer> equipments;
+   message.getChilds("data", equipments);
+
    std::vector<shared::CDataContainer>::iterator equipmentIterator;
 
    for (equipmentIterator = equipments.begin(); equipmentIterator != equipments.end(); ++equipmentIterator)
    {
-      std::string name = (*equipmentIterator).get<std::string>("name");
-      std::string devEUI = (*equipmentIterator).get<std::string>("devEUI");
+      std::string name = (*equipmentIterator).getString("name");
+      std::string devEUI = (*equipmentIterator).getString("devEUI");
       boost::shared_ptr<equipments::CDefaultEquipment> newEquipment(boost::make_shared<equipments::CDefaultEquipment>(name, devEUI, api));
 	   equipmentList.insert(std::pair<std::string, boost::shared_ptr<equipments::IEquipment>>(name, newEquipment));
       YADOMS_LOG(information) << "create device name = " << name << " devEUI = " << devEUI;
@@ -41,10 +43,10 @@ std::map<std::string, boost::shared_ptr<equipments::IEquipment>> CDecoder::decod
 
 bool CDecoder::isFrameComplete(shared::CDataContainer& message)
 {
-   int page = message.get<int>("page");
-   int pageSize = message.get<int>("size");
+   int page = message.getInt("page");
+   int pageSize = message.getInt("size");
 
-   if (message.get<int>("totalCount") > (page * pageSize))
+   if (message.getInt("totalCount") > (page * pageSize))
       return true;
    else
       return false;
@@ -52,7 +54,8 @@ bool CDecoder::isFrameComplete(shared::CDataContainer& message)
 
 shared::CDataContainer CDecoder::getLastData(shared::CDataContainer& response)
 {
-   auto messages = response.get<std::vector<shared::CDataContainer> >("");
+   std::vector<shared::CDataContainer> messages;
+   response.getChilds("", messages);
    shared::CDataContainer lastData;
 
    if (messages.size() > 0)
@@ -61,12 +64,12 @@ shared::CDataContainer CDecoder::getLastData(shared::CDataContainer& response)
       auto message = messages[0];
 
       //Copy to the answer needed information
-      lastData.set("id", message.get<std::string>("id"));
-      lastData.set("timestamp", message.get<std::string>("timestamp"));
-      lastData.set("payload", message.get<std::string>("value.payload"));
-      lastData.set("rssi", message.get<double>("metadata.network.lora.rssi"));
-      lastData.set("snr", message.get<double>("metadata.network.lora.snr"));
-      lastData.set("signalLevel", message.get<int>("value.signalLevel"));
+      lastData.set("id", message.getString("id"));
+      lastData.set("timestamp", message.getString("timestamp"));
+      lastData.set("payload", message.getString("value.payload"));
+      lastData.set("rssi", message.getDouble("metadata.network.lora.rssi"));
+      lastData.set("snr", message.getDouble("metadata.network.lora.snr"));
+      lastData.set("signalLevel", message.getInt("value.signalLevel"));
    }
    return lastData;
 }

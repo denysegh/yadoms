@@ -25,40 +25,40 @@ namespace pluginSystem
       {
          // Get and check data
 
-         m_type = m_package->get<std::string>("type");
+         m_type = m_package->getString("type");
          if (m_type.empty())
             throw shared::exception::CInvalidParameter("Error reading package.json : plugin type can not be empty");
 
          try
          {
-            m_version = shared::versioning::CVersion(m_package->get<std::string>("version"));
+            m_version = shared::versioning::CVersion(m_package->getString("version"));
          }
          catch (std::exception&)
          {
             throw shared::exception::CInvalidParameter("Error reading package.json : plugin version doesn't match expected SEMVER format (x.x.x)");
          }
 
-         m_author = m_package->get<std::string>("author");
+         m_author = m_package->getString("author");
          if (m_author.empty())
             throw shared::exception::CInvalidParameter("Error reading package.json : plugin author can not be empty");
 
          if (m_package->containsValue("url"))
-            m_url = m_package->get<std::string>("url"); // No check on URL
+            m_url = m_package->getString("url"); // No check on URL
          else
             m_url = std::string();
 
          if (m_package->containsValue("supportedPlatforms") || m_package->containsChild("supportedPlatforms"))
-            m_isSupportedOnThisPlatform = tools::CSupportedPlatformsChecker::isSupported(m_package->get<shared::CDataContainer>("supportedPlatforms"));
+            m_isSupportedOnThisPlatform = tools::CSupportedPlatformsChecker::isSupported(m_package->getChild("supportedPlatforms"));
          else
             m_isSupportedOnThisPlatform = true;
 
          if (m_package->containsValue("supportManuallyDeviceCreation"))
-            m_supportManuallyCreatedDevice = m_package->get<bool>("supportManuallyDeviceCreation");
+            m_supportManuallyCreatedDevice = m_package->getBool("supportManuallyDeviceCreation");
          else
             m_supportManuallyCreatedDevice = false;
 
          if (m_package->containsValue("supportDeviceRemovedNotification"))
-            m_supportDeviceRemovedNotification = m_package->get<bool>("supportDeviceRemovedNotification");
+            m_supportDeviceRemovedNotification = m_package->getBool("supportDeviceRemovedNotification");
          else
             m_supportDeviceRemovedNotification = false;
       }

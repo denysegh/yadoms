@@ -22,6 +22,7 @@
 ////////////////////////////////////////
 #include <boost/algorithm/string.hpp>
 #include <boost/asio.hpp>
+#include <boost/any.hpp>
 #include <boost/assert.hpp>
 #include <boost/assign.hpp>
 #include <boost/bind.hpp>
@@ -35,7 +36,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 #include <boost/preprocessor.hpp>
-#include <boost/property_tree/ptree.hpp>
 #include <boost/regex.hpp>
 #include <boost/smart_ptr/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
