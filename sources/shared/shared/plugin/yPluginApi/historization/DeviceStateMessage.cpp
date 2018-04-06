@@ -65,14 +65,12 @@ namespace shared
 
             std::string CDeviceStateMessage::getMessageId() const
             {
-               return get().getWithDefault("messageId",
-                                           std::string());
+               return get().getStringWithDefault("messageId",std::string());
             }
 
             std::string CDeviceStateMessage::getMessageData() const
             {
-               return get().getWithDefault("messageData",
-                                           std::string());
+               return get().getStringWithDefault("messageData", std::string());
             }
          }
       }

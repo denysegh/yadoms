@@ -21,7 +21,7 @@ namespace location
          // Not found in database ==> let location empty
       }
 
-      if (location.empty() || location.get<std::string>("status") == "default")
+      if (location.empty() || location.getString("status") == "default")
       {
          YADOMS_LOG(information) << "Location was not found in database, try to auto-locate...";
          tryAutoLocate();
@@ -56,16 +56,16 @@ namespace location
 
    double CLocation::latitude() const
    {
-      return getLocation().get<double>("latitude");
+      return getLocation().getDouble("latitude");
    }
 
    double CLocation::longitude() const
    {
-      return getLocation().get<double>("longitude");
+      return getLocation().getDouble("longitude");
    }
 
    double CLocation::altitude() const
    {
-      return getLocation().get<double>("altitude");
+      return getLocation().getDouble("altitude");
    }
 } // namespace location

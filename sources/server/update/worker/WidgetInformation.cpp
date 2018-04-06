@@ -25,7 +25,7 @@ namespace update
 
             try
             {
-               m_type = package.get<std::string>("type");
+               m_type = package.getString("type");
             }
             catch (std::exception&)
             {
@@ -34,7 +34,7 @@ namespace update
 
             try
             {
-               m_version = shared::versioning::CVersion(package.get<std::string>("version"));
+               m_version = shared::versioning::CVersion(package.getString("version"));
             }
             catch (std::exception&)
             {

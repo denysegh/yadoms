@@ -90,16 +90,15 @@ namespace dataAccessLayer
       // If location changed, mark it as user-modified
       auto currentConfiguration(*getServerConfiguration());
       auto configurationToSave(newConfiguration);
-      if (newConfiguration.get<std::string>("location.latitude") != currentConfiguration.get<std::string>("location.latitude") ||
-         newConfiguration.get<std::string>("location.longitude") != currentConfiguration.get<std::string>("location.longitude") ||
-         newConfiguration.get<std::string>("location.altitude") != currentConfiguration.get<std::string>("location.altitude") ||
-         newConfiguration.get<std::string>("location.timezone") != currentConfiguration.get<std::string>("location.timezone"))
+      if(newConfiguration.getString("location.latitude") != currentConfiguration.getString("location.latitude") ||
+         newConfiguration.getString("location.longitude")!= currentConfiguration.getString("location.longitude") ||
+         newConfiguration.getString("location.altitude") != currentConfiguration.getString("location.altitude") ||
+         newConfiguration.getString("location.timezone") != currentConfiguration.getString("location.timezone"))
       {
          configurationToSave.set("location.status", "userDefined");
       }
 
-      saveConfiguration("server",
-                        configurationToSave);
+      saveConfiguration("server", configurationToSave);
       notifyServerConfigurationChanged(getServerConfiguration());
    }
 
@@ -107,7 +106,7 @@ namespace dataAccessLayer
    {
       auto resetConfiguration = *m_defaultServerConfiguration;
       // Reset configuration must not overwrite firstStart flag
-      resetConfiguration.set("firstStart", getServerConfiguration()->get<bool>("firstStart"));
+      resetConfiguration.set("firstStart", getServerConfiguration()->getBool("firstStart"));
       saveServerConfiguration(resetConfiguration);
    }
 
@@ -124,7 +123,7 @@ namespace dataAccessLayer
 
    shared::CDataContainer CConfigurationManager::getLocation() const
    {
-      return getServerConfiguration()->get<shared::CDataContainer>("location");
+      return getServerConfiguration()->getChild("location");
    }
 
    void CConfigurationManager::saveAutoDetectedLocation(const shared::CDataContainer& newLocation)
@@ -132,24 +131,26 @@ namespace dataAccessLayer
       boost::lock_guard<boost::recursive_mutex> lock(m_configurationMutex);
       auto serverConfiguration = *getServerConfiguration();
 
+      auto location = getLocation();
+
       // Overwrite location only if not set by user
-      if (serverConfiguration.get<std::string>("location.status") == "userDefined")
+      if (location.getString("status") == "userDefined")
          return;
       
-      serverConfiguration.set("location.status", "autoDetected");
-      serverConfiguration.set("location.latitude", newLocation.get<std::string>("latitude"));
-      serverConfiguration.set("location.longitude", newLocation.get<std::string>("longitude"));
-      serverConfiguration.set("location.altitude", newLocation.get<std::string>("altitude"));
-      serverConfiguration.set("location.timezone", newLocation.get<std::string>("timezone"));
+      location.set("status", "autoDetected");
+      location.set("latitude", newLocation.getString("latitude"));
+      location.set("longitude",newLocation.getString("longitude"));
+      location.set("altitude", newLocation.getString("altitude"));
+      location.set("timezone", newLocation.getString("timezone"));
 
-      saveConfiguration("server",
-                        serverConfiguration);
+      serverConfiguration.set("location", location);
+      saveConfiguration("server", serverConfiguration);
       notifyServerConfigurationChanged(getServerConfiguration());
    }
 
    shared::CDataContainer CConfigurationManager::getBasicAuthentication() const
    {
-      return getServerConfiguration()->get<shared::CDataContainer>("basicAuthentication");
+      return getServerConfiguration()->getChild("basicAuthentication");
    }
 
    std::string CConfigurationManager::getConfiguration(const std::string& section) const

@@ -111,6 +111,8 @@ MACRO(PLUGIN_LINK _targetName)
       ${ARGN}
       )
 	
+   ADD_VS_NATVIS(${_targetName})
+   
    string(REPLACE "-" "_" ComponentCompatibleName ${_targetName})
    
    #configure plugin as installable component if not in devlopment state (target name begin by 'dev-')

@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "DataContainer.h"
-#include <boost/property_tree/json_parser.hpp>
 #include <shared/exception/JSONParse.hpp>
 #include "exception/EmptyResult.hpp"
 
@@ -43,13 +42,16 @@ namespace shared
 
    CDataContainer::CDataContainer(const CDataContainer& initialData)
    {
-      m_document.SetObject();
+      initializeWith(initialData);
+   }
+
+   CDataContainer::CDataContainer(boost::shared_ptr<rapidjson::Value> initialData)
+   {
       initializeWith(initialData);
    }
 
    CDataContainer::CDataContainer(rapidjson::Value &initialData)
    {
-      m_document.SetObject();
       initializeWith(initialData);
    }
 
@@ -77,7 +79,6 @@ namespace shared
 
    std::istream& CDataContainer::operator>>(std::istream& is)
    {
-      m_document.RemoveAllMembers();
       rapidjson::IStreamWrapper isw(is);
       m_document.ParseStream(isw);
       return is;
@@ -91,7 +92,6 @@ namespace shared
 
    std::istream& operator >> (std::istream& is, CDataContainer & dc)
    {
-      dc.m_document.RemoveAllMembers();
       rapidjson::IStreamWrapper isw(is);
       dc.m_document.ParseStream(isw);
       return is;
@@ -111,48 +111,35 @@ namespace shared
 
    rapidjson::Value* CDataContainer::find(const std::string & parameterName, const char pathChar) const
    {
-      rapidjson::Value * v = nullptr;
+      rapidjson::Value *v = nullptr;
       if (parameterName.empty())
       {
          v = get();
       }
       else
       {
-         auto iter = m_document.FindMember(parameterName);
-         if (iter != m_document.MemberEnd())
-         {
-            v = (rapidjson::Value*)&(iter->value);
-         }
-         else
-         {
-            std::string path = generatePath(parameterName, pathChar);
-            v = (rapidjson::Value*)rapidjson::Pointer(path).Get(m_document);
-         }
+         std::string path = generatePath(parameterName, pathChar);
+         v = (rapidjson::Value*)rapidjson::Pointer(path).Get(m_document);
       }
       return v;
    }
 
    rapidjson::Value* CDataContainer::findOrCreateArray(const std::string & parameterName, const char pathChar)
    {
-      rapidjson::Value * v = nullptr;
+      rapidjson::Value *v = nullptr;
       if (parameterName.empty())
       {
          m_document.SetArray();
-         v = &m_document;
+         v = get();
       }
       else
       {
-         v = find(parameterName, pathChar);
-         if (v == nullptr)
-         {
-            auto& allocator = m_document.GetAllocator();
-            rapidjson::Value name(parameterName, allocator);
-            m_document.AddMember(name, rapidjson::Value(rapidjson::kArrayType), allocator);
-            v = find(parameterName, pathChar);
-            if (v == nullptr)
-               throw shared::exception::CException("Fail to create array member : " + parameterName);
-         }
-         if(!v->IsArray())
+         std::string path = generatePath(parameterName, pathChar);
+         bool alreadyExist;
+         v = &rapidjson::Pointer(path).Create(m_document, &alreadyExist);
+         if (!alreadyExist)
+            v->SetArray();
+         if (!v->IsArray())
             throw shared::exception::CException("Value is not an ARRAY : " + parameterName);
       }
       return v;
@@ -160,17 +147,18 @@ namespace shared
 
    inline std::string CDataContainer::generatePath(const std::string & parameterName, const char pathChar) const
    {
-      std::string path = "/";
-      std::string pathCarStl = "";
-      pathCarStl += pathChar;
-      path += boost::replace_all_copy(parameterName, pathCarStl, "/");
-      return path;
+      std::string res = "/";
+      int c = parameterName.size();
+      const char * s = parameterName.c_str();
+      for (int i = 0; i < c; ++i)
+         res += (s[i] == pathChar) ? '/' : s[i];
+      return res;
    }
 
 
-   bool CDataContainer::getBool(const std::string &parameterName) const
+   bool CDataContainer::getBool(const std::string &parameterName, const char pathCar) const
    {
-      auto v = find(parameterName, '.');
+      auto v = find(parameterName, pathCar);
       if (v != nullptr)
       {
          if (v->IsBool())
@@ -192,9 +180,9 @@ namespace shared
       throw shared::exception::COutOfRange("Cannot find parameter " + parameterName);
    }
 
-   int CDataContainer::getInt(const std::string &parameterName) const
+   int CDataContainer::getInt(const std::string &parameterName, const char pathCar) const
    {
-      auto v = find(parameterName, '.');
+      auto v = find(parameterName, pathCar);
       if (v != nullptr)
       {
          if (v->IsInt())
@@ -211,9 +199,9 @@ namespace shared
       throw shared::exception::COutOfRange("Cannot find parameter " + parameterName);
    }
 
-   unsigned int CDataContainer::getUInt(const std::string &parameterName) const
+   unsigned int CDataContainer::getUInt(const std::string &parameterName, const char pathCar) const
    {
-      auto v = find(parameterName, '.');
+      auto v = find(parameterName, pathCar);
       if (v != nullptr)
       {
          if (v->IsUint())
@@ -231,9 +219,9 @@ namespace shared
       throw shared::exception::COutOfRange("Cannot find parameter " + parameterName);
    }
 
-   int64_t CDataContainer::getInt64(const std::string &parameterName) const
+   int64_t CDataContainer::getInt64(const std::string &parameterName, const char pathCar) const
    {
-      auto v = find(parameterName, '.');
+      auto v = find(parameterName, pathCar);
       if (v != nullptr)
       {
          if (v->IsInt64())
@@ -250,9 +238,9 @@ namespace shared
       throw shared::exception::COutOfRange("Cannot find parameter " + parameterName);
    }
 
-   uint64_t CDataContainer::getUInt64(const std::string &parameterName) const
+   uint64_t CDataContainer::getUInt64(const std::string &parameterName, const char pathCar) const
    {
-      auto v = find(parameterName, '.');
+      auto v = find(parameterName, pathCar);
       if (v != nullptr)
       {
          if (v->IsUint64())
@@ -269,9 +257,9 @@ namespace shared
       throw shared::exception::COutOfRange("Cannot find parameter " + parameterName);
    }
 
-   float CDataContainer::getFloat(const std::string &parameterName) const
+   float CDataContainer::getFloat(const std::string &parameterName, const char pathCar) const
    {
-      auto v = find(parameterName, '.');
+      auto v = find(parameterName, pathCar);
       if (v != nullptr)
       {
          if (v->IsFloat() || v->IsDouble())
@@ -289,9 +277,9 @@ namespace shared
       throw shared::exception::COutOfRange("Cannot find parameter " + parameterName);
    }
 
-   double CDataContainer::getDouble(const std::string &parameterName) const
+   double CDataContainer::getDouble(const std::string &parameterName, const char pathCar) const
    {
-      auto v = find(parameterName, '.');
+      auto v = find(parameterName, pathCar);
       if (v != nullptr)
       {
          if (v->IsDouble())
@@ -307,9 +295,9 @@ namespace shared
    }
 
 
-   bool CDataContainer::getBoolWithDefault(const std::string &parameterName, bool defaultValue) const
+   bool CDataContainer::getBoolWithDefault(const std::string &parameterName, bool defaultValue, const char pathCar) const
    {
-      auto v = find(parameterName, '.');
+      auto v = find(parameterName, pathCar);
       if (v != nullptr)
       {
          if (v->IsBool())
@@ -322,9 +310,9 @@ namespace shared
       return defaultValue;
    }
 
-   int CDataContainer::getIntWithDefault(const std::string &parameterName, int defaultValue) const
+   int CDataContainer::getIntWithDefault(const std::string &parameterName, int defaultValue, const char pathCar) const
    {
-      auto v = find(parameterName, '.');
+      auto v = find(parameterName, pathCar);
       if (v != nullptr)
       {
          if (v->IsInt())
@@ -337,9 +325,9 @@ namespace shared
       return defaultValue;
    }
 
-   unsigned int CDataContainer::getUIntWithDefault(const std::string &parameterName, unsigned int defaultValue) const
+   unsigned int CDataContainer::getUIntWithDefault(const std::string &parameterName, unsigned int defaultValue, const char pathCar) const
    {
-      auto v = find(parameterName, '.');
+      auto v = find(parameterName, pathCar);
       if (v != nullptr)
       {
          if (v->IsUint())
@@ -352,9 +340,9 @@ namespace shared
       return defaultValue;
    }
 
-   int64_t CDataContainer::getInt64WithDefault(const std::string &parameterName, int64_t defaultValue) const
+   int64_t CDataContainer::getInt64WithDefault(const std::string &parameterName, int64_t defaultValue, const char pathCar) const
    {
-      auto v = find(parameterName, '.');
+      auto v = find(parameterName, pathCar);
       if (v != nullptr)
       {
          if (v->IsInt64())
@@ -367,9 +355,9 @@ namespace shared
       return defaultValue;
    }
 
-   uint64_t CDataContainer::getUInt64WithDefault(const std::string &parameterName, uint64_t defaultValue) const
+   uint64_t CDataContainer::getUInt64WithDefault(const std::string &parameterName, uint64_t defaultValue, const char pathCar) const
    {
-      auto v = find(parameterName, '.');
+      auto v = find(parameterName, pathCar);
       if (v != nullptr)
       {
          if (v->IsUint64())
@@ -382,9 +370,9 @@ namespace shared
       return defaultValue;
    }
 
-   float CDataContainer::getFloatWithDefault(const std::string &parameterName, float defaultValue) const
+   float CDataContainer::getFloatWithDefault(const std::string &parameterName, float defaultValue, const char pathCar) const
    {
-      auto v = find(parameterName, '.');
+      auto v = find(parameterName, pathCar);
       if (v != nullptr)
       {
          if (v->IsFloat())
@@ -396,9 +384,9 @@ namespace shared
       }
       return defaultValue;
    }
-   double CDataContainer::getDoubleWithDefault(const std::string &parameterName, double defaultValue) const
+   double CDataContainer::getDoubleWithDefault(const std::string &parameterName, double defaultValue, const char pathCar) const
    {
-      auto v = find(parameterName, '.');
+      auto v = find(parameterName, pathCar);
       if (v != nullptr)
       {
          if (v->IsDouble())
@@ -408,9 +396,9 @@ namespace shared
       }
       return defaultValue;
    }
-   std::string CDataContainer::getStringWithDefault(const std::string &parameterName, const std::string & defaultValue) const
+   std::string CDataContainer::getStringWithDefault(const std::string &parameterName, const std::string & defaultValue, const char pathCar) const
    {
-      auto v = find(parameterName, '.');
+      auto v = find(parameterName, pathCar);
       if (v != nullptr)
       {
          if (v->IsString())
@@ -419,9 +407,9 @@ namespace shared
       return defaultValue;
    }
 
-   std::string CDataContainer::getString(const std::string &parameterName) const
+   std::string CDataContainer::getString(const std::string &parameterName, const char pathCar) const
    {
-      auto v = find(parameterName, '.');
+      auto v = find(parameterName, pathCar);
       if (v != nullptr)
       {
          if (v->IsString())
@@ -434,9 +422,9 @@ namespace shared
       throw shared::exception::COutOfRange("Cannot find parameter " + parameterName);
    }
 
-   CDataContainer CDataContainer::getChild(const std::string &parameterName) const
+   CDataContainer CDataContainer::getChild(const std::string &parameterName, const char pathCar) const
    {
-      auto v = find(parameterName, '.');
+      auto v = find(parameterName, pathCar);
       if (v != nullptr)
       {
          if (v->IsObject())
@@ -449,9 +437,9 @@ namespace shared
       throw shared::exception::COutOfRange("Cannot find parameter " + parameterName);
    }
 
-   void CDataContainer::getChilds(const std::string &parameterName, std::vector<CDataContainer> & result) const
+   void CDataContainer::getChilds(const std::string &parameterName, std::vector<CDataContainer> & result, const char pathCar) const
    {
-      auto v = find(parameterName, '.');
+      auto v = find(parameterName, pathCar);
       if (v != nullptr)
       {
          if (v->IsArray())
@@ -471,9 +459,9 @@ namespace shared
    }
 
 
-   void CDataContainer::getChilds(const std::string &parameterName, std::vector<bool> & result) const
+   void CDataContainer::getChilds(const std::string &parameterName, std::vector<bool> & result, const char pathCar) const
    {
-      auto v = find(parameterName, '.');
+      auto v = find(parameterName, pathCar);
       if (v != nullptr)
       {
          if (v->IsArray())
@@ -492,9 +480,9 @@ namespace shared
          throw shared::exception::COutOfRange("Cannot find parameter " + parameterName);
       }
    }
-   void CDataContainer::getChilds(const std::string &parameterName, std::vector<int> & result) const
+   void CDataContainer::getChilds(const std::string &parameterName, std::vector<int> & result, const char pathCar) const
    {
-      auto v = find(parameterName, '.');
+      auto v = find(parameterName, pathCar);
       if (v != nullptr)
       {
          if (v->IsArray())
@@ -514,9 +502,9 @@ namespace shared
       }
    }
 
-   void CDataContainer::getChilds(const std::string &parameterName, std::vector<int64_t> & result) const
+   void CDataContainer::getChilds(const std::string &parameterName, std::vector<int64_t> & result, const char pathCar) const
    {
-      auto v = find(parameterName, '.');
+      auto v = find(parameterName, pathCar);
       if (v != nullptr)
       {
          if (v->IsArray())
@@ -535,9 +523,9 @@ namespace shared
          throw shared::exception::COutOfRange("Cannot find parameter " + parameterName);
       }
    }
-   void CDataContainer::getChilds(const std::string &parameterName, std::vector<unsigned int> & result) const
+   void CDataContainer::getChilds(const std::string &parameterName, std::vector<unsigned int> & result, const char pathCar) const
    {
-      auto v = find(parameterName, '.');
+      auto v = find(parameterName, pathCar);
       if (v != nullptr)
       {
          if (v->IsArray())
@@ -557,9 +545,9 @@ namespace shared
       }
    }
 
-   void CDataContainer::getChilds(const std::string &parameterName, std::vector<uint64_t> & result) const
+   void CDataContainer::getChilds(const std::string &parameterName, std::vector<uint64_t> & result, const char pathCar) const
    {
-      auto v = find(parameterName, '.');
+      auto v = find(parameterName, pathCar);
       if (v != nullptr)
       {
          if (v->IsArray())
@@ -578,9 +566,9 @@ namespace shared
          throw shared::exception::COutOfRange("Cannot find parameter " + parameterName);
       }
    }
-   void CDataContainer::getChilds(const std::string &parameterName, std::vector<float> & result) const
+   void CDataContainer::getChilds(const std::string &parameterName, std::vector<float> & result, const char pathCar) const
    {
-      auto v = find(parameterName, '.');
+      auto v = find(parameterName, pathCar);
       if (v != nullptr)
       {
          if (v->IsArray())
@@ -599,9 +587,9 @@ namespace shared
          throw shared::exception::COutOfRange("Cannot find parameter " + parameterName);
       }
    }
-   void CDataContainer::getChilds(const std::string &parameterName, std::vector<double> & result) const
+   void CDataContainer::getChilds(const std::string &parameterName, std::vector<double> & result, const char pathCar) const
    {
-      auto v = find(parameterName, '.');
+      auto v = find(parameterName, pathCar);
       if (v != nullptr)
       {
          if (v->IsArray())
@@ -620,9 +608,9 @@ namespace shared
          throw shared::exception::COutOfRange("Cannot find parameter " + parameterName);
       }
    }
-   void CDataContainer::getChilds(const std::string &parameterName, std::vector<std::string> & result) const
+   void CDataContainer::getChilds(const std::string &parameterName, std::vector<std::string> & result, const char pathCar) const
    {
-      auto v = find(parameterName, '.');
+      auto v = find(parameterName, pathCar);
       if (v != nullptr)
       {
          if (v->IsArray())
@@ -642,9 +630,9 @@ namespace shared
       }
    }
 
-   void CDataContainer::getChilds(const std::string &parameterName, std::vector<boost::posix_time::ptime> & result) const
+   void CDataContainer::getChilds(const std::string &parameterName, std::vector<boost::posix_time::ptime> & result, const char pathCar) const
    {
-      auto v = find(parameterName, '.');
+      auto v = find(parameterName, pathCar);
       if (v != nullptr)
       {
          if (v->IsArray())
@@ -664,12 +652,17 @@ namespace shared
       }
    }
 
-   void CDataContainer::getChilds(const std::string &parameterName, std::map<std::string, std::string> & result)
+   void CDataContainer::getChilds(const std::string &parameterName, std::map<std::string, std::string> & result, const char pathCar) const
    {
-      auto v = find(parameterName, '.');
+      auto v = find(parameterName, pathCar);
       if (v != nullptr)
       {
-         for (auto itr = v->MemberBegin(); itr != v->MemberEnd(); ++itr)
+         //use serialization to ensure all items (at level1 only) are stringized
+         rapidjson::StringBuffer sb;
+         rapidjson::Writer<rapidjson::StringBuffer> writer(sb, 0, 1);
+         v->Accept(writer);
+         CDataContainer allLevel1ItemsAsStrings (sb.GetString());
+         for (auto itr = allLevel1ItemsAsStrings.m_document.MemberBegin(); itr != allLevel1ItemsAsStrings.m_document.MemberEnd(); ++itr)
             result[itr->name.GetString()] = itr->value.GetString();
       }
       else
@@ -678,8 +671,22 @@ namespace shared
       }
    }
 
+   std::vector<std::string> CDataContainer::getKeys() const
+   {
+      std::vector<std::string> result;
+      for (auto itr = m_document.MemberBegin(); itr != m_document.MemberEnd(); ++itr)
+         result.push_back(itr->name.GetString());
+      return result;
+   }
 
-   int CDataContainer::getEnumValue(const std::string& parameterName, const EnumValuesNames& valuesNames) const
+   std::map<std::string, std::string> CDataContainer::getAsMap(const std::string &parameterName, const char pathCar) const
+   {
+      std::map<std::string, std::string> local;
+      getChilds(parameterName, local);
+      return local;
+   }
+
+   int CDataContainer::getEnumValue(const std::string& parameterName, const EnumValuesNames& valuesNames, const char pathCar) const
    {
       auto stringValue = getString(parameterName);
       auto it = valuesNames.find(stringValue);
@@ -689,7 +696,7 @@ namespace shared
       throw exception::COutOfRange(std::string("Value ") + stringValue + " was not found for " + parameterName + " parameter");
    }
 
-   int CDataContainer::getEnumValueWithDefault(const std::string& parameterName, const EnumValuesNames& valuesNames, int defaultValue) const
+   int CDataContainer::getEnumValueWithDefault(const std::string& parameterName, const EnumValuesNames& valuesNames, int defaultValue, const char pathCar) const
    {
       auto stringValue = getStringWithDefault(parameterName, "");
       auto it = valuesNames.find(stringValue);
@@ -699,25 +706,25 @@ namespace shared
       return defaultValue;
    }
 
-   boost::posix_time::ptime CDataContainer::getBoostPTime(const std::string &parameterName) const
+   boost::posix_time::ptime CDataContainer::getBoostPTime(const std::string &parameterName, const char pathCar) const
    {
       return boost::posix_time::from_iso_string(getString(parameterName));
    }
      
-   boost::posix_time::ptime CDataContainer::getBoostPTimeWithDefault(const std::string &parameterName, const boost::posix_time::ptime & defaultValue) const
+   boost::posix_time::ptime CDataContainer::getBoostPTimeWithDefault(const std::string &parameterName, const boost::posix_time::ptime & defaultValue, const char pathCar) const
    {
-      if(find(parameterName, '.') != nullptr)
+      if(find(parameterName, pathCar) != nullptr)
          return boost::posix_time::from_iso_string(getString(parameterName));
       return defaultValue;
    }
 
-   void CDataContainer::get(const std::string &parameterName, shared::IDataContainable & value)
+   void CDataContainer::get(const std::string &parameterName, shared::IDataContainable & value, const char pathCar)
    {
       CDataContainer a = getChild(parameterName);
       value.fillFromContent(a);
    }
 
-   void CDataContainer::get(const std::string &parameterName, boost::shared_ptr<shared::IDataContainable> & value)
+   void CDataContainer::get(const std::string &parameterName, boost::shared_ptr<shared::IDataContainable> & value, const char pathCar)
    {
       CDataContainer a = getChild(parameterName);
       value->fillFromContent(a);
@@ -725,91 +732,84 @@ namespace shared
 
    
 
-   void CDataContainer::set(const std::string &parameterName, bool value)
+   void CDataContainer::set(const std::string &parameterName, bool value, const char pathCar)
    {
-      auto & a = m_document.GetAllocator();
-      rapidjson::Value name(parameterName, a);
-      m_document.AddMember(name, value, a);
+      std::string p = generatePath(parameterName, pathCar);
+      rapidjson::Pointer(p).Set(m_document, value);
    }
 
 
-   void CDataContainer::set(const std::string &parameterName, int value)
+   void CDataContainer::set(const std::string &parameterName, int value, const char pathCar)
    {
-      auto & a = m_document.GetAllocator();
-      rapidjson::Value name(parameterName, a);
-      m_document.AddMember(name, value, a);
+      std::string p = generatePath(parameterName, pathCar);
+      rapidjson::Pointer(p).Set(m_document, value);
    }
 
-   void CDataContainer::set(const std::string &parameterName, unsigned int value)
+   void CDataContainer::set(const std::string &parameterName, unsigned int value, const char pathCar)
    {
-      auto & a = m_document.GetAllocator();
-      rapidjson::Value name(parameterName, a);
-      m_document.AddMember(name, value, a);
+      std::string p = generatePath(parameterName, pathCar);
+      rapidjson::Pointer(p).Set(m_document, value);
    }
 
-   void CDataContainer::set(const std::string &parameterName, int64_t value)
+   void CDataContainer::set(const std::string &parameterName, int64_t value, const char pathCar)
    {
-      auto & a = m_document.GetAllocator();
-      rapidjson::Value name(parameterName, a);
-      m_document.AddMember(name, value, a);
+      std::string p = generatePath(parameterName, pathCar);
+      rapidjson::Pointer(p).Set(m_document, value);
    }
 
-   void CDataContainer::set(const std::string &parameterName, uint64_t value)
+   void CDataContainer::set(const std::string &parameterName, uint64_t value, const char pathCar)
    {
-      auto & a = m_document.GetAllocator();
-      rapidjson::Value name(parameterName, a);
-      m_document.AddMember(name, value, a);
+      std::string p = generatePath(parameterName, pathCar);
+      rapidjson::Pointer(p).Set(m_document, value);
    }
 
-   void CDataContainer::set(const std::string &parameterName, float value)
+   void CDataContainer::set(const std::string &parameterName, float value, const char pathCar)
    {
-      auto & a = m_document.GetAllocator();
-      rapidjson::Value name(parameterName, a);
-      m_document.AddMember(name, value, a);
+      std::string p = generatePath(parameterName, pathCar);
+      rapidjson::Pointer(p).Set(m_document, value);
    }
-   void CDataContainer::set(const std::string &parameterName, double value)
+   void CDataContainer::set(const std::string &parameterName, double value, const char pathCar)
    {
-      auto & a = m_document.GetAllocator();
-      rapidjson::Value name(parameterName, a);
-      m_document.AddMember(name, value, a);
+      std::string p = generatePath(parameterName, pathCar);
+      rapidjson::Pointer(p).Set(m_document, value);
    }
-   void CDataContainer::set(const std::string &parameterName, const std::string & value)
+   void CDataContainer::set(const std::string &parameterName, const std::string & value, const char pathCar)
    {
       auto & a = m_document.GetAllocator();
       rapidjson::Value v(rapidjson::kStringType);
       v.SetString(value, a);
-      rapidjson::Value name(parameterName, a);
-      m_document.AddMember(name, v, a);
+      std::string p = generatePath(parameterName, pathCar);
+      rapidjson::Pointer(p).Set(m_document, v);
    }
-   void CDataContainer::set(const std::string &parameterName, const char * value)
+   void CDataContainer::set(const std::string &parameterName, const char * value, const char pathCar)
    {
       std::string s(value);
       set(parameterName, s);
    }
 
-   void CDataContainer::set(const std::string &parameterName, const CDataContainer & value)
+   void CDataContainer::set(const std::string &parameterName, const CDataContainer & value, const char pathCar)
    {
       auto & a = m_document.GetAllocator();
       rapidjson::Value v(rapidjson::kObjectType);
       v.CopyFrom(value.m_document, a);
-      rapidjson::Value name(parameterName, a);
-      m_document.AddMember(name, v, a);
+      std::string p = generatePath(parameterName, pathCar);
+      rapidjson::Pointer(p).Set(m_document, v);
    }
 
-   void CDataContainer::set(const std::string &parameterName, const shared::IDataContainable & value)
+   void CDataContainer::set(const std::string &parameterName, const shared::IDataContainable & value, const char pathCar)
    {
       CDataContainer obj;
       value.extractContent(obj);
       set(parameterName, obj);
    }
 
-   void CDataContainer::set(const std::string &parameterName, boost::posix_time::ptime value)
+   void CDataContainer::set(const std::string &parameterName, boost::posix_time::ptime value, const char pathCar)
    {
       std::string date = boost::posix_time::to_iso_string(value);
       set(parameterName, date);
    }
 
-   void CDataContainer::set(const std::string &parameterName, boost::shared_ptr<shared::IDataContainable> & value)
+   void CDataContainer::set(const std::string &parameterName, boost::shared_ptr<shared::IDataContainable> & value, const char pathCar)
    {
       CDataContainer obj;
       if(value)
@@ -817,10 +817,10 @@ namespace shared
       set(parameterName, obj);
    }
 
-   void CDataContainer::set(const std::string &parameterName, const std::vector<bool> & values)
+   void CDataContainer::set(const std::string &parameterName, const std::vector<bool> & values, const char pathCar)
    {
       auto& allocator = m_document.GetAllocator();
-      rapidjson::Value * v = findOrCreateArray(parameterName, '.');
+      rapidjson::Value * v = findOrCreateArray(parameterName, pathCar);
 
       for (auto i = values.begin(); i != values.end(); ++i)
       {
@@ -828,10 +828,10 @@ namespace shared
       }
    }
 
-   void CDataContainer::set(const std::string &parameterName, const std::vector<int> & values)
+   void CDataContainer::set(const std::string &parameterName, const std::vector<int> & values, const char pathCar)
    {
       auto& allocator = m_document.GetAllocator();
-      rapidjson::Value * v = findOrCreateArray(parameterName, '.');
+      rapidjson::Value * v = findOrCreateArray(parameterName, pathCar);
 
       for (auto i = values.begin(); i != values.end(); ++i)
       {
@@ -839,10 +839,10 @@ namespace shared
       }
    }
 
-   void CDataContainer::set(const std::string &parameterName, const std::vector<int64_t> & values)
+   void CDataContainer::set(const std::string &parameterName, const std::vector<int64_t> & values, const char pathCar)
    {
       auto& allocator = m_document.GetAllocator();
-      rapidjson::Value * v = findOrCreateArray(parameterName, '.');
+      rapidjson::Value * v = findOrCreateArray(parameterName, pathCar);
 
       for (auto i = values.begin(); i != values.end(); ++i)
       {
@@ -850,10 +850,10 @@ namespace shared
       }
    }
 
-   void CDataContainer::set(const std::string &parameterName, const std::vector<float> & values)
+   void CDataContainer::set(const std::string &parameterName, const std::vector<float> & values, const char pathCar)
    {
       auto& allocator = m_document.GetAllocator();
-      rapidjson::Value * v = findOrCreateArray(parameterName, '.');
+      rapidjson::Value * v = findOrCreateArray(parameterName, pathCar);
 
       for (auto i = values.begin(); i != values.end(); ++i)
       {
@@ -861,20 +861,20 @@ namespace shared
       }
    }
 
-   void CDataContainer::set(const std::string &parameterName, const std::vector<double> & values)
+   void CDataContainer::set(const std::string &parameterName, const std::vector<double> & values, const char pathCar)
    {
       auto& allocator = m_document.GetAllocator();
-      rapidjson::Value * v = findOrCreateArray(parameterName, '.');
+      rapidjson::Value * v = findOrCreateArray(parameterName, pathCar);
 
       for (auto i = values.begin(); i != values.end(); ++i)
       {
          v->PushBack(*i, allocator);
       }
    }
-   void CDataContainer::set(const std::string &parameterName, const std::vector<std::string> & values)
+   void CDataContainer::set(const std::string &parameterName, const std::vector<std::string> & values, const char pathCar)
    {
       auto& allocator = m_document.GetAllocator();
-      rapidjson::Value * v = findOrCreateArray(parameterName, '.');
+      rapidjson::Value * v = findOrCreateArray(parameterName, pathCar);
 
       for (auto i = values.begin(); i != values.end(); ++i)
       {
@@ -882,10 +882,10 @@ namespace shared
          v->PushBack(val, allocator);
       }
    }
-   void CDataContainer::set(const std::string &parameterName, const std::vector<CDataContainer> & values)
+   void CDataContainer::set(const std::string &parameterName, const std::vector<CDataContainer> & values, const char pathCar)
    {
       auto& allocator = m_document.GetAllocator();
-      rapidjson::Value * v = findOrCreateArray(parameterName, '.');
+      rapidjson::Value * v = findOrCreateArray(parameterName, pathCar);
 
       for (auto i = values.begin(); i != values.end(); ++i)
       {
@@ -895,10 +895,10 @@ namespace shared
       }
    }
 
-   void CDataContainer::set(const std::string &parameterName, const std::vector<shared::IDataContainable> & values)
+   void CDataContainer::set(const std::string &parameterName, const std::vector<shared::IDataContainable> & values, const char pathCar)
    {
       auto& allocator = m_document.GetAllocator();
-      rapidjson::Value * v = findOrCreateArray(parameterName, '.');
+      rapidjson::Value * v = findOrCreateArray(parameterName, pathCar);
 
       for (auto i = values.begin(); i != values.end(); ++i)
       {
@@ -908,10 +908,10 @@ namespace shared
       }
    }  
    
-   void CDataContainer::set(const std::string &parameterName, const std::vector<boost::posix_time::ptime> & values)
+   void CDataContainer::set(const std::string &parameterName, const std::vector<boost::posix_time::ptime> & values, const char pathCar)
    {
       auto& allocator = m_document.GetAllocator();
-      rapidjson::Value * v = findOrCreateArray(parameterName, '.');
+      rapidjson::Value * v = findOrCreateArray(parameterName, pathCar);
 
       for (auto i = values.begin(); i != values.end(); ++i)
       {
@@ -921,10 +921,10 @@ namespace shared
       }
    }
 
-   void CDataContainer::set(const std::string &parameterName, const std::vector<boost::shared_ptr<shared::IDataContainable>> & values)
+   void CDataContainer::set(const std::string &parameterName, const std::vector<boost::shared_ptr<shared::IDataContainable>> & values, const char pathCar)
    {
       auto& allocator = m_document.GetAllocator();
-      rapidjson::Value * v = findOrCreateArray(parameterName, '.');
+      rapidjson::Value * v = findOrCreateArray(parameterName, pathCar);
       for (auto i = values.begin(); i != values.end(); ++i)
       {
          CDataContainer local;
@@ -935,59 +935,59 @@ namespace shared
 
 
 
-   void CDataContainer::push(const std::string &parameterName, bool value)
+   void CDataContainer::push(const std::string &parameterName, bool value, const char pathCar)
    {
       auto & a = m_document.GetAllocator();
-      auto v = findOrCreateArray(parameterName, '.');
+      auto v = findOrCreateArray(parameterName, pathCar);
       if (v != nullptr)
          v->PushBack(value, a);
    }
-   void CDataContainer::push(const std::string &parameterName, int value)
+   void CDataContainer::push(const std::string &parameterName, int value, const char pathCar)
    {
       auto & a = m_document.GetAllocator();
-      auto v = findOrCreateArray(parameterName, '.');
+      auto v = findOrCreateArray(parameterName, pathCar);
       if (v != nullptr)
          v->PushBack(value, a);
    }
-   void CDataContainer::push(const std::string &parameterName, int64_t value)
+   void CDataContainer::push(const std::string &parameterName, int64_t value, const char pathCar)
    {
       auto & a = m_document.GetAllocator();
-      auto v = findOrCreateArray(parameterName, '.');
+      auto v = findOrCreateArray(parameterName, pathCar);
       if (v != nullptr)
          v->PushBack(value, a);
    } 
-   void CDataContainer::push(const std::string &parameterName, unsigned int value)
+   void CDataContainer::push(const std::string &parameterName, unsigned int value, const char pathCar)
    {
       auto & a = m_document.GetAllocator();
-      auto v = findOrCreateArray(parameterName, '.');
+      auto v = findOrCreateArray(parameterName, pathCar);
       if (v != nullptr)
          v->PushBack(value, a);
    }
-   void CDataContainer::push(const std::string &parameterName, uint64_t value)
+   void CDataContainer::push(const std::string &parameterName, uint64_t value, const char pathCar)
    {
       auto & a = m_document.GetAllocator();
-      auto v = findOrCreateArray(parameterName, '.');
+      auto v = findOrCreateArray(parameterName, pathCar);
       if (v != nullptr)
          v->PushBack(value, a);
    }
-   void CDataContainer::push(const std::string &parameterName, float value)
+   void CDataContainer::push(const std::string &parameterName, float value, const char pathCar)
    {
       auto & a = m_document.GetAllocator();
-      auto v = findOrCreateArray(parameterName, '.');
+      auto v = findOrCreateArray(parameterName, pathCar);
       if (v != nullptr)
          v->PushBack(value, a);
    }
-   void CDataContainer::push(const std::string &parameterName, double value)
+   void CDataContainer::push(const std::string &parameterName, double value, const char pathCar)
    {
       auto & a = m_document.GetAllocator();
-      auto v = findOrCreateArray(parameterName, '.');
+      auto v = findOrCreateArray(parameterName, pathCar);
       if (v != nullptr)
          v->PushBack(value, a);
    } 
-   void CDataContainer::push(const std::string &parameterName, const std::string & value)
+   void CDataContainer::push(const std::string &parameterName, const std::string & value, const char pathCar)
    {
       auto & a = m_document.GetAllocator();
-      auto v = findOrCreateArray(parameterName, '.');
+      auto v = findOrCreateArray(parameterName, pathCar);
       if (v != nullptr)
       {
          rapidjson::Value vs(rapidjson::kStringType);
@@ -995,108 +995,108 @@ namespace shared
          v->PushBack(vs, a);
       }
    }
-   void CDataContainer::push(const std::string &parameterName, const char * value)
+   void CDataContainer::push(const std::string &parameterName, const char * value, const char pathCar)
    {
       std::string v(value);
       push(parameterName, v);
    }
-   void CDataContainer::push(const std::string &parameterName, const CDataContainer & value)
+   void CDataContainer::push(const std::string &parameterName, const CDataContainer & value, const char pathCar)
    {
       auto & a = m_document.GetAllocator();
-      auto v = findOrCreateArray(parameterName, '.');
+      auto v = findOrCreateArray(parameterName, pathCar);
       if (v != nullptr)
       {
          rapidjson::Value v2(value.m_document, a);
          v->PushBack(v2, a);
       }
    }
-   void CDataContainer::push(const std::string &parameterName, const shared::IDataContainable & value)
+   void CDataContainer::push(const std::string &parameterName, const shared::IDataContainable & value, const char pathCar)
    {
       CDataContainer a;
       value.extractContent(a);
       push(parameterName, a);
    }
-   void CDataContainer::push(const std::string &parameterName, boost::shared_ptr<shared::IDataContainable> & value)
+   void CDataContainer::push(const std::string &parameterName, boost::shared_ptr<shared::IDataContainable> & value, const char pathCar)
    {
       CDataContainer a;
       value->extractContent(a);
       push(parameterName, a);
    }
 
-   void CDataContainer::push(const std::string &parameterName, std::vector<bool> & value)
+   void CDataContainer::push(const std::string &parameterName, std::vector<bool> & value, const char pathCar)
    {
       auto & a = m_document.GetAllocator();
-      auto v = findOrCreateArray(parameterName, '.');
+      auto v = findOrCreateArray(parameterName, pathCar);
       if (v != nullptr)
       {
          for(auto i : value)
             v->PushBack(i, a);
       }
    }
-   void CDataContainer::push(const std::string &parameterName, std::vector<int> & value)
+   void CDataContainer::push(const std::string &parameterName, std::vector<int> & value, const char pathCar)
    {
       auto & a = m_document.GetAllocator();
-      auto v = findOrCreateArray(parameterName, '.');
+      auto v = findOrCreateArray(parameterName, pathCar);
       if (v != nullptr)
       {
          for(auto i : value)
             v->PushBack(i, a);
       }
    }
-   void CDataContainer::push(const std::string &parameterName, std::vector<int64_t> & value)
+   void CDataContainer::push(const std::string &parameterName, std::vector<int64_t> & value, const char pathCar)
    {
       auto & a = m_document.GetAllocator();
-      auto v = findOrCreateArray(parameterName, '.');
+      auto v = findOrCreateArray(parameterName, pathCar);
       if (v != nullptr)
       {
          for(auto i : value)
             v->PushBack(i, a);
       }
    }
-   void CDataContainer::push(const std::string &parameterName, std::vector<unsigned int> & value)
+   void CDataContainer::push(const std::string &parameterName, std::vector<unsigned int> & value, const char pathCar)
    {
       auto & a = m_document.GetAllocator();
-      auto v = findOrCreateArray(parameterName, '.');
+      auto v = findOrCreateArray(parameterName, pathCar);
       if (v != nullptr)
       {
          for (auto i : value)
             v->PushBack(i, a);
       }
    }
-   void CDataContainer::push(const std::string &parameterName, std::vector<uint64_t> & value)
+   void CDataContainer::push(const std::string &parameterName, std::vector<uint64_t> & value, const char pathCar)
    {
       auto & a = m_document.GetAllocator();
-      auto v = findOrCreateArray(parameterName, '.');
+      auto v = findOrCreateArray(parameterName, pathCar);
       if (v != nullptr)
       {
          for (auto i : value)
             v->PushBack(i, a);
       }
    }
-   void CDataContainer::push(const std::string &parameterName, std::vector<float> & value)
+   void CDataContainer::push(const std::string &parameterName, std::vector<float> & value, const char pathCar)
    {
       auto & a = m_document.GetAllocator();
-      auto v = findOrCreateArray(parameterName, '.');
+      auto v = findOrCreateArray(parameterName, pathCar);
       if (v != nullptr)
       {
          for (auto i : value)
             v->PushBack(i, a);
       }
    } 
-   void CDataContainer::push(const std::string &parameterName, std::vector<double> & value)
+   void CDataContainer::push(const std::string &parameterName, std::vector<double> & value, const char pathCar)
    {
       auto & a = m_document.GetAllocator();
-      auto v = findOrCreateArray(parameterName, '.');
+      auto v = findOrCreateArray(parameterName, pathCar);
       if (v != nullptr)
       {
          for (auto i : value)
             v->PushBack(i, a);
       }
    }   
-   void CDataContainer::push(const std::string &parameterName, std::vector<std::string> & value)
+   void CDataContainer::push(const std::string &parameterName, std::vector<std::string> & value, const char pathCar)
    {
       auto & a = m_document.GetAllocator();
-      auto v = findOrCreateArray(parameterName, '.');
+      auto v = findOrCreateArray(parameterName, pathCar);
       if (v != nullptr)
       {
          for (auto & i : value)
@@ -1108,10 +1108,10 @@ namespace shared
       }
    } 
    
-   void CDataContainer::push(const std::string &parameterName, std::vector<CDataContainer> & value)
+   void CDataContainer::push(const std::string &parameterName, std::vector<CDataContainer> & value, const char pathCar)
    {
       auto & a = m_document.GetAllocator();
-      auto v = findOrCreateArray(parameterName, '.');
+      auto v = findOrCreateArray(parameterName, pathCar);
       if (v != nullptr)
       {
          for (auto & i : value)
@@ -1123,10 +1123,10 @@ namespace shared
       }
    }   
 
-   void CDataContainer::push(const std::string &parameterName, std::vector<shared::IDataContainable> & value)
+   void CDataContainer::push(const std::string &parameterName, std::vector<shared::IDataContainable> & value, const char pathCar)
    {
       auto & a = m_document.GetAllocator();
-      auto v = findOrCreateArray(parameterName, '.');
+      auto v = findOrCreateArray(parameterName, pathCar);
       if (v != nullptr)
       {
          for (shared::IDataContainable & i : value)
@@ -1138,10 +1138,10 @@ namespace shared
       }
    }
 
-   void CDataContainer::push(const std::string &parameterName, std::vector<boost::shared_ptr<shared::IDataContainable>> & value)
+   void CDataContainer::push(const std::string &parameterName, std::vector<boost::shared_ptr<shared::IDataContainable>> & value, const char pathCar)
    {
       auto & a = m_document.GetAllocator();
-      auto v = findOrCreateArray(parameterName, '.');
+      auto v = findOrCreateArray(parameterName, pathCar);
       if (v != nullptr)
       {
          for (boost::shared_ptr<shared::IDataContainable> & i : value)
@@ -1158,9 +1158,9 @@ namespace shared
       return m_document.MemberCount() == 0;
    }
 
-   bool CDataContainer::exists(const std::string &parameterName) const
+   bool CDataContainer::exists(const std::string &parameterName, const char pathCar) const
    {
-      return find(parameterName, '.') != nullptr;
+      return find(parameterName, pathCar) != nullptr;
    }
 
    void CDataContainer::printToLog(std::ostream& os) const
@@ -1214,17 +1214,17 @@ namespace shared
       m_document.ParseStream(isw);
    }
 
-   bool CDataContainer::containsChild(const std::string& parameterName) const
+   bool CDataContainer::containsChild(const std::string& parameterName, const char pathCar) const
    {
-      rapidjson::Value* found = find(parameterName, '.');
+      rapidjson::Value* found = find(parameterName, pathCar);
       if (found)
          return !found->IsNull() && found->IsObject();
       return false;
    }
 
-   bool CDataContainer::containsValue(const std::string& parameterName) const
+   bool CDataContainer::containsValue(const std::string& parameterName, const char pathCar) const
    {
-      rapidjson::Value* found = find(parameterName, '.');
+      rapidjson::Value* found = find(parameterName, pathCar);
 
       if (found != NULL && !found->IsNull())
       {
@@ -1234,9 +1234,9 @@ namespace shared
       return false;
    }
 
-   void CDataContainer::setNull(const std::string &parameterName)
+   void CDataContainer::setNull(const std::string &parameterName, const char pathCar)
    {
-      rapidjson::Value* found = find(parameterName, '.');
+      rapidjson::Value* found = find(parameterName, pathCar);
       if(found != nullptr)
          found->SetNull();
    }
@@ -1286,5 +1286,10 @@ namespace shared
    void CDataContainer::initializeWith(const rapidjson::Value &rhs)
    {
       m_document.CopyFrom(rhs, m_document.GetAllocator());
+   }
+
+   void CDataContainer::initializeWith(boost::shared_ptr<rapidjson::Value> rhs)
+   {
+      m_document.CopyFrom(*rhs.get(), m_document.GetAllocator());
    }
 } // namespace shared

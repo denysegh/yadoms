@@ -55,10 +55,7 @@ namespace shared
                                                                 std::string>& messageDataParameters)
             {
                //convert map to dataContainer
-               CDataContainer dc;
-               for (auto i = messageDataParameters.begin(); i != messageDataParameters.end(); ++i)
-                  dc.set(i->first, i->second);
-
+               CDataContainer dc(messageDataParameters);
                auto dcSerialized = dc.serialize(); //use variable to allow use of reference parameter
                setMessage(messageId, dcSerialized);
             }
@@ -66,14 +63,12 @@ namespace shared
 
             std::string CPluginStateMessage::getMessageId() const
             {
-               return get().getWithDefault("messageId",
-                                           std::string());
+               return get().getStringWithDefault("messageId", std::string());
             }
 
             std::string CPluginStateMessage::getMessageData() const
             {
-               return get().getWithDefault("messageData",
-                                           std::string());
+               return get().getStringWithDefault("messageData", std::string());
             }
          }
       }

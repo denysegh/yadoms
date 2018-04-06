@@ -46,18 +46,27 @@ namespace shared
       //--------------------------------------------------------------
       explicit CDataContainer(const std::map<std::string, std::string> & initialData);
 
-      //--------------------------------------------------------------
-      /// \brief		Constructor. 
-      /// \param [in] initialData    Initial data for this container (will be deserialized)
-      //--------------------------------------------------------------
-      CDataContainer(rapidjson::Value &initialData);
-      
+
       //--------------------------------------------------------------
       /// \brief		Constructor. 
       /// \param [in] initialData    Initial data for this container (will be deserialized)
       //--------------------------------------------------------------
       CDataContainer(const CDataContainer & initialData);
 
+      //--------------------------------------------------------------
+      /// \brief		Constructor. 
+      /// \param [in] initialData    Initial data for this container (will be deserialized)
+      //--------------------------------------------------------------
+      CDataContainer(boost::shared_ptr<rapidjson::Value> initialData);
+
+   private:
+      //--------------------------------------------------------------
+      /// \brief		Constructor. 
+      /// \param [in] initialData    Initial data for this container (will be deserialized)
+      //--------------------------------------------------------------
+      CDataContainer(rapidjson::Value &initialData);
+
+   public:
       //--------------------------------------------------------------
       /// \brief			Destructor
       /// \return    	void
@@ -70,105 +79,108 @@ namespace shared
       //--------------------------------------------------------------
       typedef std::map<std::string, unsigned int> EnumValuesNames;
 
-      bool getBool(const std::string &parameterName) const;
-      int getInt(const std::string &parameterName) const;
-      int64_t getInt64(const std::string &parameterName) const;
-      unsigned int getUInt(const std::string &parameterName) const;
-      uint64_t getUInt64(const std::string &parameterName) const;
-      float getFloat(const std::string &parameterName) const;
-      double getDouble(const std::string &parameterName) const;
-      std::string getString(const std::string &parameterName) const;
-      boost::posix_time::ptime getBoostPTime(const std::string &parameterName) const;
+      bool getBool(const std::string &parameterName, const char pathCar = '.') const;
+      int getInt(const std::string &parameterName, const char pathCar = '.') const;
+      int64_t getInt64(const std::string &parameterName, const char pathCar = '.') const;
+      unsigned int getUInt(const std::string &parameterName, const char pathCar = '.') const;
+      uint64_t getUInt64(const std::string &parameterName, const char pathCar = '.') const;
+      float getFloat(const std::string &parameterName, const char pathCar = '.') const;
+      double getDouble(const std::string &parameterName, const char pathCar = '.') const;
+      std::string getString(const std::string &parameterName, const char pathCar = '.') const;
+      boost::posix_time::ptime getBoostPTime(const std::string &parameterName, const char pathCar = '.') const;
 
-      int getEnumValue(const std::string& parameterName, const EnumValuesNames& valuesNames) const;
-      void get(const std::string &parameterName, shared::IDataContainable & value);
-      void get(const std::string &parameterName, boost::shared_ptr<shared::IDataContainable> & value);
+      int getEnumValue(const std::string& parameterName, const EnumValuesNames& valuesNames, const char pathCar = '.') const;
+      void get(const std::string &parameterName, shared::IDataContainable & value, const char pathCar = '.');
+      void get(const std::string &parameterName, boost::shared_ptr<shared::IDataContainable> & value, const char pathCar = '.');
 
       
-      bool getBoolWithDefault(const std::string &parameterName, bool defaultValue) const;
-      int getIntWithDefault(const std::string &parameterName, int defaultValue) const;
-      int64_t getInt64WithDefault(const std::string &parameterName, int64_t defaultValue) const;
-      unsigned int getUIntWithDefault(const std::string &parameterName, unsigned int defaultValue) const;
-      uint64_t getUInt64WithDefault(const std::string &parameterName, uint64_t defaultValue) const;
-      float getFloatWithDefault(const std::string &parameterName, float defaultValue) const;
-      double getDoubleWithDefault(const std::string &parameterName, double defaultValue) const;
-      std::string getStringWithDefault(const std::string &parameterName, const std::string & defaultValue) const;
-      boost::posix_time::ptime getBoostPTimeWithDefault(const std::string &parameterName, const boost::posix_time::ptime & defaultValue) const;
-      int getEnumValueWithDefault(const std::string& parameterName, const EnumValuesNames& valuesNames, int defaultValue) const;
+      bool getBoolWithDefault(const std::string &parameterName, bool defaultValue, const char pathCar = '.') const;
+      int getIntWithDefault(const std::string &parameterName, int defaultValue, const char pathCar = '.') const;
+      int64_t getInt64WithDefault(const std::string &parameterName, int64_t defaultValue, const char pathCar = '.') const;
+      unsigned int getUIntWithDefault(const std::string &parameterName, unsigned int defaultValue, const char pathCar = '.') const;
+      uint64_t getUInt64WithDefault(const std::string &parameterName, uint64_t defaultValue, const char pathCar = '.') const;
+      float getFloatWithDefault(const std::string &parameterName, float defaultValue, const char pathCar = '.') const;
+      double getDoubleWithDefault(const std::string &parameterName, double defaultValue, const char pathCar = '.') const;
+      std::string getStringWithDefault(const std::string &parameterName, const std::string & defaultValue, const char pathCar = '.') const;
+      boost::posix_time::ptime getBoostPTimeWithDefault(const std::string &parameterName, const boost::posix_time::ptime & defaultValue, const char pathCar = '.') const;
+      int getEnumValueWithDefault(const std::string& parameterName, const EnumValuesNames& valuesNames, int defaultValue, const char pathCar = '.') const;
 
-      CDataContainer getChild(const std::string &parameterName) const;
-      void getChilds(const std::string &parameterName, std::vector<CDataContainer> & result) const;
-      void getChilds(const std::string &parameterName, std::vector<bool> & result) const;
-      void getChilds(const std::string &parameterName, std::vector<int> & result) const;
-      void getChilds(const std::string &parameterName, std::vector<int64_t> & result) const;
-      void getChilds(const std::string &parameterName, std::vector<unsigned int> & result) const;
-      void getChilds(const std::string &parameterName, std::vector<uint64_t> & result) const;
-      void getChilds(const std::string &parameterName, std::vector<float> & result) const;
-      void getChilds(const std::string &parameterName, std::vector<double> & result) const;
-      void getChilds(const std::string &parameterName, std::vector<std::string> & result) const;
-      void getChilds(const std::string &parameterName, std::vector<boost::posix_time::ptime> & result) const;
-      void getChilds(const std::string &parameterName, std::map<std::string, std::string> & result);
+      CDataContainer getChild(const std::string &parameterName, const char pathCar = '.') const;
+      void getChilds(const std::string &parameterName, std::vector<CDataContainer> & result, const char pathCar = '.') const;
+      void getChilds(const std::string &parameterName, std::vector<bool> & result, const char pathCar = '.') const;
+      void getChilds(const std::string &parameterName, std::vector<int> & result, const char pathCar = '.') const;
+      void getChilds(const std::string &parameterName, std::vector<int64_t> & result, const char pathCar = '.') const;
+      void getChilds(const std::string &parameterName, std::vector<unsigned int> & result, const char pathCar = '.') const;
+      void getChilds(const std::string &parameterName, std::vector<uint64_t> & result, const char pathCar = '.') const;
+      void getChilds(const std::string &parameterName, std::vector<float> & result, const char pathCar = '.') const;
+      void getChilds(const std::string &parameterName, std::vector<double> & result, const char pathCar = '.') const;
+      void getChilds(const std::string &parameterName, std::vector<std::string> & result, const char pathCar = '.') const;
+      void getChilds(const std::string &parameterName, std::vector<boost::posix_time::ptime> & result, const char pathCar = '.') const;
+      void getChilds(const std::string &parameterName, std::map<std::string, std::string> & result, const char pathCar = '.') const;
 
+      std::map<std::string, std::string> getAsMap(const std::string &parameterName, const char pathCar = '.') const;
+
+      std::vector<std::string> getKeys() const;
       //--------------------------------------------------------------
       /// \brief			Set a null object
       //--------------------------------------------------------------
-      void setNull(const std::string &parameterName);
+      void setNull(const std::string &parameterName, const char pathCar = '.');
 
       //--------------------------------------------------------------
       /// \brief			Set value (replace or create)
       //--------------------------------------------------------------
-      void set(const std::string &parameterName, bool value);
-      void set(const std::string &parameterName, int value);
-      void set(const std::string &parameterName, unsigned int value);
-      void set(const std::string &parameterName, int64_t value);
-      void set(const std::string &parameterName, uint64_t value);
-      void set(const std::string &parameterName, float value);
-      void set(const std::string &parameterName, double value);
-      void set(const std::string &parameterName, const std::string & value);
-      void set(const std::string &parameterName, const char * value);
-      void set(const std::string &parameterName, const CDataContainer & value);
-      void set(const std::string &parameterName, const shared::IDataContainable & value);
-      void set(const std::string &parameterName, boost::shared_ptr<shared::IDataContainable> & value);
-      void set(const std::string &parameterName, boost::posix_time::ptime value);
-      void set(const std::string &parameterName, const std::vector<bool> & values);
-      void set(const std::string &parameterName, const std::vector<int> & values);
-      void set(const std::string &parameterName, const std::vector<unsigned int> & values);
-      void set(const std::string &parameterName, const std::vector<int64_t> & values);
-      void set(const std::string &parameterName, const std::vector<uint64_t> & values);
-      void set(const std::string &parameterName, const std::vector<float> & values);
-      void set(const std::string &parameterName, const std::vector<double> & values);
-      void set(const std::string &parameterName, const std::vector<std::string> & values);
-      void set(const std::string &parameterName, const std::vector<CDataContainer> & values);
-      void set(const std::string &parameterName, const std::vector<shared::IDataContainable> & values);
-      void set(const std::string &parameterName, const std::vector<boost::shared_ptr<shared::IDataContainable>> & values);
-      void set(const std::string &parameterName, const std::vector<boost::posix_time::ptime> & values);
+      void set(const std::string &parameterName, bool value, const char pathCar = '.');
+      void set(const std::string &parameterName, int value, const char pathCar = '.');
+      void set(const std::string &parameterName, unsigned int value, const char pathCar = '.');
+      void set(const std::string &parameterName, int64_t value, const char pathCar = '.');
+      void set(const std::string &parameterName, uint64_t value, const char pathCar = '.');
+      void set(const std::string &parameterName, float value, const char pathCar = '.');
+      void set(const std::string &parameterName, double value, const char pathCar = '.');
+      void set(const std::string &parameterName, const std::string & value, const char pathCar = '.');
+      void set(const std::string &parameterName, const char * value, const char pathCar = '.');
+      void set(const std::string &parameterName, const CDataContainer & value, const char pathCar = '.');
+      void set(const std::string &parameterName, const shared::IDataContainable & value, const char pathCar = '.');
+      void set(const std::string &parameterName, boost::shared_ptr<shared::IDataContainable> & value, const char pathCar = '.');
+      void set(const std::string &parameterName, boost::posix_time::ptime value, const char pathCar = '.');
+      void set(const std::string &parameterName, const std::vector<bool> & values, const char pathCar = '.');
+      void set(const std::string &parameterName, const std::vector<int> & values, const char pathCar = '.');
+      void set(const std::string &parameterName, const std::vector<unsigned int> & values, const char pathCar = '.');
+      void set(const std::string &parameterName, const std::vector<int64_t> & values, const char pathCar = '.');
+      void set(const std::string &parameterName, const std::vector<uint64_t> & values, const char pathCar = '.');
+      void set(const std::string &parameterName, const std::vector<float> & values, const char pathCar = '.');
+      void set(const std::string &parameterName, const std::vector<double> & values, const char pathCar = '.');
+      void set(const std::string &parameterName, const std::vector<std::string> & values, const char pathCar = '.');
+      void set(const std::string &parameterName, const std::vector<CDataContainer> & values, const char pathCar = '.');
+      void set(const std::string &parameterName, const std::vector<shared::IDataContainable> & values, const char pathCar = '.');
+      void set(const std::string &parameterName, const std::vector<boost::shared_ptr<shared::IDataContainable>> & values, const char pathCar = '.');
+      void set(const std::string &parameterName, const std::vector<boost::posix_time::ptime> & values, const char pathCar = '.');
       
       //--------------------------------------------------------------
       /// \brief			Push value to an array (append or create)
       //--------------------------------------------------------------
-      void push(const std::string &parameterName, bool value);
-      void push(const std::string &parameterName, int value);
-      void push(const std::string &parameterName, unsigned int value);
-      void push(const std::string &parameterName, int64_t value);
-      void push(const std::string &parameterName, uint64_t value);
-      void push(const std::string &parameterName, float value);
-      void push(const std::string &parameterName, double value);
-      void push(const std::string &parameterName, const std::string & value);
-      void push(const std::string &parameterName, const char * value);
-      void push(const std::string &parameterName, const CDataContainer & value);
-      void push(const std::string &parameterName, const shared::IDataContainable & value);
-      void push(const std::string &parameterName, boost::shared_ptr<shared::IDataContainable> & value);
-      void push(const std::string &parameterName, std::vector<bool> & values);
-      void push(const std::string &parameterName, std::vector<int> & values);
-      void push(const std::string &parameterName, std::vector<unsigned int> & values);
-      void push(const std::string &parameterName, std::vector<int64_t> & values);
-      void push(const std::string &parameterName, std::vector<uint64_t> & values);
-      void push(const std::string &parameterName, std::vector<float> & values);
-      void push(const std::string &parameterName, std::vector<double> & values);
-      void push(const std::string &parameterName, std::vector<std::string> & values);
-      void push(const std::string &parameterName, std::vector<CDataContainer> & values);
-      void push(const std::string &parameterName, std::vector<shared::IDataContainable> & values);
-      void push(const std::string &parameterName, std::vector<boost::shared_ptr<shared::IDataContainable>> & values);
+      void push(const std::string &parameterName, bool value, const char pathCar = '.');
+      void push(const std::string &parameterName, int value, const char pathCar = '.');
+      void push(const std::string &parameterName, unsigned int value, const char pathCar = '.');
+      void push(const std::string &parameterName, int64_t value, const char pathCar = '.');
+      void push(const std::string &parameterName, uint64_t value, const char pathCar = '.');
+      void push(const std::string &parameterName, float value, const char pathCar = '.');
+      void push(const std::string &parameterName, double value, const char pathCar = '.');
+      void push(const std::string &parameterName, const std::string & value, const char pathCar = '.');
+      void push(const std::string &parameterName, const char * value, const char pathCar = '.');
+      void push(const std::string &parameterName, const CDataContainer & value, const char pathCar = '.');
+      void push(const std::string &parameterName, const shared::IDataContainable & value, const char pathCar = '.');
+      void push(const std::string &parameterName, boost::shared_ptr<shared::IDataContainable> & value, const char pathCar = '.');
+      void push(const std::string &parameterName, std::vector<bool> & values, const char pathCar = '.');
+      void push(const std::string &parameterName, std::vector<int> & values, const char pathCar = '.');
+      void push(const std::string &parameterName, std::vector<unsigned int> & values, const char pathCar = '.');
+      void push(const std::string &parameterName, std::vector<int64_t> & values, const char pathCar = '.');
+      void push(const std::string &parameterName, std::vector<uint64_t> & values, const char pathCar = '.');
+      void push(const std::string &parameterName, std::vector<float> & values, const char pathCar = '.');
+      void push(const std::string &parameterName, std::vector<double> & values, const char pathCar = '.');
+      void push(const std::string &parameterName, std::vector<std::string> & values, const char pathCar = '.');
+      void push(const std::string &parameterName, std::vector<CDataContainer> & values, const char pathCar = '.');
+      void push(const std::string &parameterName, std::vector<shared::IDataContainable> & values, const char pathCar = '.');
+      void push(const std::string &parameterName, std::vector<boost::shared_ptr<shared::IDataContainable>> & values, const char pathCar = '.');
 
       //--------------------------------------------------------------
       /// \brief		Check if the container is empty
@@ -176,10 +188,10 @@ namespace shared
       //--------------------------------------------------------------
       bool empty() const;
 
-      bool exists(const std::string &parameterName) const;
+      bool exists(const std::string &parameterName, const char pathCar = '.') const;
 
-      bool containsChild(const std::string& parameterName) const;
-      bool containsValue(const std::string& parameterName) const;
+      bool containsChild(const std::string& parameterName, const char pathCar = '.') const;
+      bool containsValue(const std::string& parameterName, const char pathCar = '.') const;
 
       void printToLog(std::ostream& os = std::cout) const;
       //--------------------------------------------------------------
@@ -254,19 +266,20 @@ namespace shared
 
       void initializeWith(const CDataContainer &rhs);
       void initializeWith(const rapidjson::Value &rhs);
+      void initializeWith(boost::shared_ptr<rapidjson::Value> rhs);
 
    private:
       std::string generatePath(const std::string & parameterName, const char pathChar) const;
       rapidjson::Value* find(const std::string & parameterName, const char pathChar) const;
       rapidjson::Value* findOrCreateArray(const std::string & parameterName, const char pathChar);
       static void mergeObjects(rapidjson::Value &dstObject, rapidjson::Value &srcObject, rapidjson::Document::AllocatorType &allocator);
+
+      
    public:
       //--------------------------------------------------------------
       /// \brief		An empty container which could be used as default method parameter
       //--------------------------------------------------------------
       const static CDataContainer EmptyContainer;
-
-
 
    private:
       rapidjson::Document * get() const { return (rapidjson::Document *) &m_document; }

@@ -50,7 +50,7 @@ namespace web { namespace rest {
    bool CResult::isSuccess(const shared::CDataContainer & data)
    {
       if(data.exists(m_resultFieldName) )
-         return data.get<bool>(m_resultFieldName);
+         return data.getBool(m_resultFieldName);
       return false;
    }
 

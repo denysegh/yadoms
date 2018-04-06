@@ -7,6 +7,23 @@
 BOOST_AUTO_TEST_SUITE(TestDataContainer)
 
 
+class Json
+{
+public:
+   Json()
+   {
+
+   }
+
+   virtual ~Json()
+   {
+
+   }
+
+private:
+   rapidjson::Document document;
+};
+
    enum EEnumType
    {
       kEnumValue1 = 7,
@@ -75,6 +92,37 @@ BOOST_AUTO_TEST_SUITE(TestDataContainer)
       test.set("config1", subContainer);
 
       BOOST_CHECK_EQUAL(test.getDouble("config1.double1"), 8.0) ;
+   }
+
+
+   BOOST_AUTO_TEST_CASE(SubChilds)
+   {
+      shared::CDataContainer test;
+      test.set("int", 5);
+      test.set("double", 4.0);
+      test.set("string", "plouf");
+
+      BOOST_CHECK_EQUAL(test.getInt("int"), 5);
+      BOOST_CHECK_EQUAL(test.getDouble("double"), 4.0);
+      BOOST_CHECK_EQUAL(test.getString("string"), "plouf");
+
+      shared::CDataContainer subContainer;
+      subContainer.set("int4", 6);
+      subContainer.set("double1", 8.0);
+      subContainer.set("string2", "plouf2");
+
+      test.set("config1", subContainer);
+
+      BOOST_CHECK_EQUAL(test.getDouble("config1.double1"), 8.0);
+
+      test.set("config1.double1", 10.0);
+      BOOST_CHECK_EQUAL(test.getDouble("config1.double1"), 10.0);
+
+      test.set("config1.test", 42);
+      BOOST_CHECK_EQUAL(test.getInt("config1.test"), 42);
+
+      test.set("config1.double1", 9.0);
+      BOOST_CHECK_EQUAL(test.getDouble("config1.double1"), 9.0);
    }
 
    BOOST_AUTO_TEST_CASE(CollectionContainer)
@@ -525,7 +573,16 @@ BOOST_AUTO_TEST_SUITE(TestDataContainer)
       shared::CDataContainer dc;
       dc.set("secA.secB.valC", fi);
       BOOST_CHECK_EQUAL(dc.getInt("secA.secB.valC"), fi()) ;
-      //BOOST_CHECK_EQUAL(dc.get<shared::CDataContainer>("secA").get<shared::CDataContainer>("secB").get<int>("valC"), fi()) ;
+
+      shared::CDataContainer dcf;
+      dcf.set("valF", fi());
+
+      shared::CDataContainer dce;
+      dce.set("secE", dcf);
+
+      dc.set("secD", dce);
+
+      BOOST_CHECK_EQUAL(dc.getChild("secD").getChild("secE").getInt("valF"), fi()) ;
 
       //no path using separator 0x00
       /*dc.set("secD.secE.valC", fi, 0x00);

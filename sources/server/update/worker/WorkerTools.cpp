@@ -110,7 +110,7 @@ namespace update
                packageJson.deserializeFromFile(packageJsonPathString);
 
                //retreive the plugin name
-               const auto pluginName = packageJson.get<std::string>("type");
+               const auto pluginName = packageJson.getString("type");
 
 
                try

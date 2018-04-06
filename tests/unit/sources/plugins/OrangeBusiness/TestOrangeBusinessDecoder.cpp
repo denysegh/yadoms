@@ -12,7 +12,7 @@ BOOST_AUTO_TEST_SUITE(TestOrangeBusiness)
    {
       CDecoder decoder;
       shared::CDataContainer messageRecu;
-      BOOST_REQUIRE_THROW(decoder.isFrameComplete(messageRecu), shared::exception::CInvalidParameter);
+      BOOST_REQUIRE_THROW(decoder.isFrameComplete(messageRecu), shared::exception::COutOfRange);
    }
 
    BOOST_AUTO_TEST_CASE(DecoderDeviceFrameEmpty)
@@ -21,7 +21,7 @@ BOOST_AUTO_TEST_SUITE(TestOrangeBusiness)
       auto api(boost::make_shared<CDefaultYPluginApiMock>());
 
       shared::CDataContainer messageRecu;
-      BOOST_REQUIRE_THROW(decoder.decodeDevicesMessage(api, messageRecu), shared::exception::CInvalidParameter);
+      BOOST_REQUIRE_THROW(decoder.decodeDevicesMessage(api, messageRecu), shared::exception::COutOfRange);
    }
 
    BOOST_AUTO_TEST_CASE(DecoderDeviceFrameNominal)

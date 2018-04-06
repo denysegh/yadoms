@@ -80,7 +80,7 @@ namespace web
                if (!content.containsValue("downloadUrl"))
                   return CResult::GenerateError("The request should contains the downloadURL.");
 
-               const auto downloadUrl = content.get<std::string>("downloadUrl");
+               const auto downloadUrl = content.getString("downloadUrl");
                const auto taskId = m_updateManager->updateYadomsAsync(downloadUrl);
                shared::CDataContainer result;
                result.set("taskId", taskId);
@@ -107,7 +107,7 @@ namespace web
             if (!content.containsValue("downloadUrl"))
                return CResult::GenerateError("The request should contains the downloadURL.");
 
-            const auto downloadUrl = content.get<std::string>("downloadUrl");
+            const auto downloadUrl = content.getString("downloadUrl");
             const auto taskId = m_updateManager->updatePluginAsync(pluginName, downloadUrl);
             shared::CDataContainer result;
             result.set("taskId", taskId);
@@ -123,7 +123,7 @@ namespace web
             if (!content.containsValue("downloadUrl"))
                return CResult::GenerateError("The request should contains the downloadURL.");
 
-            const auto downloadUrl = content.get<std::string>("downloadUrl");
+            const auto downloadUrl = content.getString("downloadUrl");
             const auto taskId = m_updateManager->installPluginAsync(downloadUrl);
             shared::CDataContainer result;
             result.set("taskId", taskId);
@@ -159,7 +159,7 @@ namespace web
             if (!content.containsValue("downloadUrl"))
                return CResult::GenerateError("The request should contains the downloadURL.");
 
-            const auto downloadUrl = content.get<std::string>("downloadUrl");
+            const auto downloadUrl = content.getString("downloadUrl");
             const auto taskId = m_updateManager->updateWidgetAsync(widgetName, downloadUrl);
             shared::CDataContainer result;
             result.set("taskId", taskId);
@@ -175,7 +175,7 @@ namespace web
             if (!content.containsValue("downloadUrl"))
                return CResult::GenerateError("The request should contains the downloadURL.");
 
-            const auto downloadUrl = content.get<std::string>("downloadUrl");
+            const auto downloadUrl = content.getString("downloadUrl");
             const auto taskId = m_updateManager->installWidgetAsync(downloadUrl);
             shared::CDataContainer result;
             result.set("taskId", taskId);
@@ -212,7 +212,7 @@ namespace web
             if (!content.containsValue("downloadUrl"))
                return CResult::GenerateError("The request should contains the downloadURL.");
 
-            const auto downloadUrl = content.get<std::string>("downloadUrl");
+            const auto downloadUrl = content.getString("downloadUrl");
             const auto taskId = m_updateManager->updateScriptInterpreterAsync(scriptInterpreterName, downloadUrl);
             shared::CDataContainer result;
             result.set("taskId", taskId);
@@ -228,7 +228,7 @@ namespace web
             if (!content.containsValue("downloadUrl"))
                return CResult::GenerateError("The request should contains the downloadURL.");
 
-            const auto downloadUrl = content.get<std::string>("downloadUrl");
+            const auto downloadUrl = content.getString("downloadUrl");
             const auto taskId = m_updateManager->installScriptInterpreterAsync(downloadUrl);
             shared::CDataContainer result;
             result.set("taskId", taskId);

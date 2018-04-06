@@ -23,8 +23,8 @@ namespace shared
    {
       try
       {
-         auto mapParameters = parameters.getAsMap();
-         auto mapheaderParameters = headerParameters.getAsMap();
+         auto mapParameters = parameters.getAsMap("");
+         auto mapheaderParameters = headerParameters.getAsMap("");
          Poco::URI uri(session->getUrl());
 
          if (!parameters.empty())

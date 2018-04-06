@@ -60,6 +60,7 @@ MACRO(SCRIPT_INTERPRETER_LINK _targetName)
       ${ARGN}
       )
 	
+   ADD_VS_NATVIS(${_targetName})
 
    string(REPLACE "-" "_" ComponentCompatibleName ${_targetName})
    

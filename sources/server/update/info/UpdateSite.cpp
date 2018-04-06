@@ -85,11 +85,11 @@ namespace update
             if (!lastVersionInformation.containsValue(m_distantScriptResult))
                throw std::runtime_error("Error in calling script. Fail to get data from " + base.toString());
 
-            if (!lastVersionInformation.get<bool>(m_distantScriptResult))
+            if (!lastVersionInformation.getBool(m_distantScriptResult))
                throw std::runtime_error(
-                  "Error in calling script : " + lastVersionInformation.get<std::string>("message"));
+                  "Error in calling script : " + lastVersionInformation.getString("message"));
 
-            return lastVersionInformation.get<shared::CDataContainer>(resultFieldToReturn);
+            return lastVersionInformation.getChild(resultFieldToReturn);
          }
          catch (std::exception& e)
          {

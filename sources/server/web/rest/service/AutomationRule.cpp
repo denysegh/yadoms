@@ -95,8 +95,13 @@ namespace web
          {
             auto rules = m_rulesManager->getRules();
 
+            std::vector<boost::shared_ptr<shared::IDataContainable>> a;
+            for (auto& r : rules)
+               a.push_back(boost::dynamic_pointer_cast<shared::IDataContainable>(r));
             shared::CDataContainer t;
-            t.set("rules", rules);
+            t.set("rules", a);
+
+            
             return CResult::GenerateSuccess(t);
          }
 
@@ -108,7 +113,7 @@ namespace web
                if (parameters.size() != 3)
                   throw CRuleException("invalid parameter in URL");
 
-               return CResult::GenerateSuccess(m_rulesManager->getRule(boost::lexical_cast<int>(parameters[2])));
+               return CResult::GenerateSuccess(boost::dynamic_pointer_cast<shared::IDataContainable>(m_rulesManager->getRule(boost::lexical_cast<int>(parameters[2]))));
             }
             catch (CRuleException& e)
             {
@@ -240,8 +245,8 @@ namespace web
                //start the rule
                m_rulesManager->startRule(ruleId);
 
-               boost::shared_ptr<const database::entities::CRule> ruleFound = m_rulesManager->getRule(ruleId);
-               return CResult::GenerateSuccess(ruleFound);
+               boost::shared_ptr<database::entities::CRule> ruleFound = m_rulesManager->getRule(ruleId);
+               return CResult::GenerateSuccess(boost::dynamic_pointer_cast<shared::IDataContainable>(ruleFound));
             }
             catch (CRuleException& e)
             {
@@ -271,7 +276,7 @@ namespace web
                m_rulesManager->stopRuleAndWaitForStopped(ruleId);
 
                auto ruleFound = m_rulesManager->getRule(ruleId);
-               return CResult::GenerateSuccess(ruleFound);
+               return CResult::GenerateSuccess(boost::dynamic_pointer_cast<shared::IDataContainable>(ruleFound));
             }
             catch (CRuleException& e)
             {
@@ -297,10 +302,10 @@ namespace web
                shared::CDataContainer content(requestContent);
                ruleData->fillFromContent(content);
 
-               auto idCreated = m_rulesManager->createRule(ruleData, content.get<std::string>("code"));
+               auto idCreated = m_rulesManager->createRule(ruleData, content.getString("code"));
 
-               boost::shared_ptr<const database::entities::CRule> ruleFound = m_rulesManager->getRule(idCreated);
-               return CResult::GenerateSuccess(ruleFound);
+               boost::shared_ptr<database::entities::CRule> ruleFound = m_rulesManager->getRule(idCreated);
+               return CResult::GenerateSuccess(boost::dynamic_pointer_cast<shared::IDataContainable>(ruleFound));
             }
             catch (CRuleException& e)
             {
@@ -335,8 +340,8 @@ namespace web
                ruleData->Id = ruleId;
                m_rulesManager->updateRule(ruleData);
 
-               boost::shared_ptr<const database::entities::CRule> ruleFound = m_rulesManager->getRule(ruleId);
-               return CResult::GenerateSuccess(ruleFound);
+               boost::shared_ptr<database::entities::CRule> ruleFound = m_rulesManager->getRule(ruleId);
+               return CResult::GenerateSuccess(boost::dynamic_pointer_cast<shared::IDataContainable>(ruleFound));
             }
             catch (CRuleException& e)
             {
@@ -369,7 +374,7 @@ namespace web
                if (ruleData->Id.isDefined())
                   throw CRuleException("Rule Id is not modifiable");
 
-               auto code = content.get<std::string>("code");
+               auto code = content.getString("code");
                if (code.empty())
                   throw CRuleException("No code provided for the rule");
 

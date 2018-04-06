@@ -30,13 +30,13 @@ namespace shared
 
             void CFile::fillFromContent(const CDataContainer & initialData)
             {
-               m_filename = initialData.get<std::string>("name");
-               m_filesize = initialData.get<unsigned int>("size");
-               m_mimeType = initialData.get<std::string>("type");
-               std::string dateIso = initialData.get<std::string>("lastModified");
+               m_filename = initialData.getString("name");
+               m_filesize = initialData.getUInt("size");
+               m_mimeType = initialData.getString("type");
+               std::string dateIso = initialData.getString("lastModified");
                boost::posix_time::ptime a = boost::posix_time::from_iso_string(dateIso);
                m_lastModified = dateTime::CDateTimeContainer(a);
-               m_base64content = initialData.get<std::string>("content");
+               m_base64content = initialData.getString("content");
             }
 
             void CFile::fillFromSerializedString(const std::string & serializedData)

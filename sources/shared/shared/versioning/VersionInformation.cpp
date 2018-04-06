@@ -13,7 +13,7 @@ namespace shared
 
       CVersion CVersionInformation::getVersion() const
       {
-         return CVersion(m_container.get<std::string>("version"));
+         return CVersion(m_container.getString("version"));
       }
 
       std::string CVersionInformation::serialize() const

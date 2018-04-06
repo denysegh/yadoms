@@ -26,17 +26,17 @@ namespace location
       {
          auto ipApiResult(shared::CHttpMethods::SendGetRequest("http://ip-api.com/json/?fields=status,lat,lon,timezone"));
          
-         if (ipApiResult.get<std::string>("status") == "fail")
-            throw shared::exception::CException("ip-api.com service failed with error : " + ipApiResult.get<std::string>("message"));
+         if (ipApiResult.getString("status") == "fail")
+            throw shared::exception::CException("ip-api.com service failed with error : " + ipApiResult.getString("message"));
 
-         if (ipApiResult.get<std::string>("status") != "success")
+         if (ipApiResult.getString("status") != "success")
             throw shared::exception::CException("ip-api.com service returned unknwon error : " + ipApiResult.serialize());
 
          shared::CDataContainer foundLocation;
-         foundLocation.set("latitude", ipApiResult.get<std::string>("lat"));
-         foundLocation.set("longitude", ipApiResult.get<std::string>("lon"));
+         foundLocation.set("latitude", ipApiResult.getString("lat"));
+         foundLocation.set("longitude", ipApiResult.getString("lon"));
          foundLocation.set("altitude", "0.0"); // Not available by this service
-         foundLocation.set("timezone", ipApiResult.get<std::string>("timezone"));
+         foundLocation.set("timezone", ipApiResult.getString("timezone"));
 
          onFoundFct(foundLocation);
       }
